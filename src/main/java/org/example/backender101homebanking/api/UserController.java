@@ -29,19 +29,19 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping("/new-user")
+    @PostMapping
     public ResponseEntity<UserDTO> addUser(@Valid @RequestBody UserDTO userDTO) {
         UserDTO savedUser = userService.addUser(userDTO);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update-user/{userId}")
+    @PutMapping("/{userId}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable int userId, @Valid @RequestBody UserDTO userDTO) {
         UserDTO updatedUser = userService.updateUser(userId, userDTO);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete-user/{userId}")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable int userId) {
         userService.deleteUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
