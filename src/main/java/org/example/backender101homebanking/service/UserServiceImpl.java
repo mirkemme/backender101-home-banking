@@ -1,70 +1,64 @@
 package org.example.backender101homebanking.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.exception.ResourceNotFoundException;
+import org.example.backender101homebanking.mapper.UserMapper;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service("user-service")
+@Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserServiceImpl(@Qualifier("mysql-user") UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserMapper userMapper;
 
     @Override
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
+
         return users.stream()
-                .map(this::convertToDTO)
+                .map(userMapper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-   /* @Override
+    @Override
     public UserDTO getUserById(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        return convertToDTO(user);
+
+        return userMapper.convertToDTO(user);
     }
 
     @Override
     public UserDTO addUser(UserDTO userDTO) {
+        User user = userMapper.convertToEntity(userDTO);
+        User savedUser = userRepository.save(user);
+
+        return userMapper.convertToDTO(savedUser);
     }
 
     @Override
     public UserDTO updateUser(int userId, UserDTO userDTO) {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        userMapper.updateUserFromDTO(existingUser, userDTO);
+        User updatedUser = userRepository.save(existingUser);
+
+        return userMapper.convertToDTO(updatedUser);
     }
 
     @Override
     public void deleteUser(int userId) {
-    }*/
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-    // Helper method to convert User entity to UserDTO
-    private UserDTO convertToDTO(User user) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(user.getId());
-        userDTO.setFirstName(user.getFirstName());
-        userDTO.setLastName(user.getLastName());
-        userDTO.setPassword(user.getPassword());
-        userDTO.setEmail(user.getEmail());
-        return userDTO;
+        userRepository.delete(user);
     }
-
-    // Helper method to convert UserDTO to User entity
-    /*private User convertToEntity(UserDTO userDTO) {
-        User user = new User();
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setPassword(userDTO.getPassword());
-        user.setEmail(userDTO.getEmail());
-        return user;
-    }*/
 }
