@@ -1,6 +1,6 @@
 package org.example.backender101homebanking.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.UserMapper;
@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
     public List<UserDTO> getAllUsers() {
@@ -48,7 +48,6 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Update the existing user with data from userDTO
         userMapper.updateUserFromDTO(existingUser, userDTO);
         User updatedUser = userRepository.save(existingUser);
 

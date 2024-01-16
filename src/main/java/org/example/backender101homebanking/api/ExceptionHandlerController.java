@@ -1,7 +1,7 @@
 package org.example.backender101homebanking.api;
 
 import org.apache.coyote.BadRequestException;
-import org.example.backender101homebanking.dto.response.ErrorResponse;
+import org.example.backender101homebanking.dto.error.ErrorResponse;
 import org.example.backender101homebanking.exception.InternalServerErrorException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;

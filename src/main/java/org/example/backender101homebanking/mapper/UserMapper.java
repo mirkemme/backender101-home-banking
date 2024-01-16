@@ -30,7 +30,6 @@ public class UserMapper implements EntityMapper<UserDTO, User> {
         return userDTO;
     }
 
-    // Update the existing user with data from userDTO
     public void updateUserFromDTO(User user, UserDTO userDTO) {
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
