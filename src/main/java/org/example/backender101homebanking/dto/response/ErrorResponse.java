@@ -1,4 +1,4 @@
-package org.example.backender101homebanking.exception;
+package org.example.backender101homebanking.dto.response;
 
 import lombok.AllArgsConstructor;
 

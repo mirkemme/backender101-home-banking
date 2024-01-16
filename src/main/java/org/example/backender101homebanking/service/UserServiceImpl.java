@@ -21,6 +21,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
+
         return users.stream()
                 .map(userMapper::convertToDTO)
                 .collect(Collectors.toList());
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserById(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
         return userMapper.convertToDTO(user);
     }
 
@@ -37,6 +39,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO addUser(UserDTO userDTO) {
         User user = userMapper.convertToEntity(userDTO);
         User savedUser = userRepository.save(user);
+
         return userMapper.convertToDTO(savedUser);
     }
 
@@ -46,12 +49,9 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         // Update the existing user with data from userDTO
-        existingUser.setFirstName(userDTO.getFirstName());
-        existingUser.setLastName(userDTO.getLastName());
-        existingUser.setPassword(userDTO.getPassword());
-        existingUser.setEmail(userDTO.getEmail());
-
+        userMapper.updateUserFromDTO(existingUser, userDTO);
         User updatedUser = userRepository.save(existingUser);
+
         return userMapper.convertToDTO(updatedUser);
     }
 
