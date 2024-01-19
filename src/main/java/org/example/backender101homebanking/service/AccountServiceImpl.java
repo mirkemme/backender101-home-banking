@@ -23,6 +23,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final AccountMapper accountMapper;
+    private final UserMapper userMapper;
 
     @Override
     public List<AccountResponseDTO> getAllAccounts() {
@@ -32,10 +33,13 @@ public class AccountServiceImpl implements AccountService {
                     AccountResponseDTO accountResponseDTO = new AccountResponseDTO();
                     accountResponseDTO.setNumber(account.getNumber());
                     accountResponseDTO.setBalance(account.getBalance());
+
                     List<UserDTO> users = account.getUsers().stream()
-                            .map(UserMapper.INSTANCE::convertToDto)
+                            .map(userMapper::convertToDto)
                             .collect(Collectors.toList());
+
                     accountResponseDTO.setUsers(users);
+
                     return accountResponseDTO;
                 })
                 .collect(Collectors.toList());
