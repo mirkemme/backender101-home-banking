@@ -1,16 +1,15 @@
 package org.example.backender101homebanking.mapper;
 
+import org.example.backender101homebanking.dto.TransactionDTO;
+import org.example.backender101homebanking.model.Transaction;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface TransactionMapper {
-
-    /*TransactionMapper INSTANCE = Mappers.getMapper(TransactionMapper.class);
-    TransactionDTO toDto(Transaction transaction);
-    TransactionResponseDTO toTransactionResponseDto(List<TransactionDTO> transactions);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "timestamp", ignore = true)
+    @Mapping(target = "accountNumber", ignore = true)
+    TransactionDTO convertToDto(Transaction transaction);
     @Mapping(target = "account", ignore = true)
-    Transaction toEntity(TransactionRequestDTO transactionRequestDTO, Account account);*/
+    @Mapping(target = "timestamp", ignore = true)
+    Transaction convertToEntity(TransactionDTO transactionDTO);
 }
