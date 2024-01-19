@@ -2,6 +2,7 @@ package org.example.backender101homebanking.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,7 +20,6 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "account_number", nullable = false)
-    @NotBlank(message = "account_number is mandatory")
     private Account account;
 
     @Column(name = "type", nullable = false)
@@ -27,12 +27,12 @@ public class Transaction {
     private String type;
 
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
-    @NotBlank(message = "amount is mandatory")
+    @NotNull(message = "amount is mandatory")
     private BigDecimal amount;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "timestamp", nullable = false)
-    @NotBlank(message = "timestamp is mandatory")
+    @NotNull(message = "timestamp is mandatory")
     private Date timestamp;
 
     @Column(name = "currency", nullable = false)

@@ -33,7 +33,6 @@ public class User {
     @NotBlank(message = "email is mandatory")
     private String email;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "users")
     private List<Account> accounts;
-
 }
