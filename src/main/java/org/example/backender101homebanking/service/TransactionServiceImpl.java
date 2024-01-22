@@ -1,6 +1,5 @@
 package org.example.backender101homebanking.service;
 
-import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.TransactionDTO;
@@ -23,8 +22,6 @@ public class TransactionServiceImpl implements TransactionService  {
     private final TransactionMapper transactionMapper;
 
     public TransactionDTO withdraw(TransactionDTO transactionDTO) {
-        validateTransactionDTO(transactionDTO);
-
         Account account = getAccount(transactionDTO.getAccountNumber());
         BigDecimal currentBalance = account.getBalance();
         BigDecimal withdrawalAmount = transactionDTO.getAmount();
@@ -38,7 +35,6 @@ public class TransactionServiceImpl implements TransactionService  {
 
         Transaction transaction = transactionMapper.convertToEntity(transactionDTO);
         transaction.setAccount(account);
-        transaction.setAmount(withdrawalAmount.negate()); // l'importo del prelievo è negativo
         transaction.setTimestamp(new Date());
 
         transactionRepository.save(transaction);
@@ -49,8 +45,6 @@ public class TransactionServiceImpl implements TransactionService  {
     }
 
     public TransactionDTO deposit(TransactionDTO transactionDTO) {
-        validateTransactionDTO(transactionDTO);
-
         Account account = getAccount(transactionDTO.getAccountNumber());
 
         BigDecimal currentBalance = account.getBalance();
@@ -69,24 +63,6 @@ public class TransactionServiceImpl implements TransactionService  {
         transactionDTO.setId(transaction.getId());
 
         return transactionDTO;
-    }
-
-    private void validateTransactionDTO(TransactionDTO transactionDTO) {
-        if (StringUtils.isBlank(transactionDTO.getAccountNumber())) {
-            throw new IllegalArgumentException("Account number is mandatory");
-        }
-
-        if (transactionDTO.getAmount() == null || transactionDTO.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be a positive value");
-        }
-
-        if (StringUtils.isBlank(transactionDTO.getType())) {
-            throw new IllegalArgumentException("Transaction type is mandatory");
-        }
-        
-        if (StringUtils.isBlank(transactionDTO.getCurrency())) {
-            throw new IllegalArgumentException("Currency is mandatory");
-        }
     }
 
     private Account getAccount(String accountNumber) {

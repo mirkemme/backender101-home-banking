@@ -1,12 +1,20 @@
 package org.example.backender101homebanking.dto;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Date;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 public class TransactionResponseDTO {
-    private List<TransactionDTO> transactions;
+    private Long id;
+    private String accountNumber;
+    private String type;
+    private BigDecimal amount;
+    private String currency;
+    private Date timestamp;
 }
