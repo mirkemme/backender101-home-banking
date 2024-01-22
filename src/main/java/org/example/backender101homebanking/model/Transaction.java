@@ -1,8 +1,9 @@
 package org.example.backender101homebanking.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,33 @@ import java.util.Date;
 @NoArgsConstructor
 @Table(name = "transaction")
 public class Transaction {
+    public enum TransactionType {
+        DEPOSIT,
+        WITHDRAW;
+
+        public String toString() {
+            return name().toLowerCase();
+        }
+
+        public static TransactionType fromString(String value) {
+            return valueOf(value.toUpperCase());
+        }
+    }
+
+    public enum CurrencyType {
+        EURO,
+        DOLLAR,
+        YEN;
+
+        public String toString() {
+            return name().toLowerCase();
+        }
+
+        public static CurrencyType fromString(String value) {
+            return valueOf(value.toUpperCase());
+        }
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,11 +51,14 @@ public class Transaction {
     private Account account;
 
     @Column(name = "type", nullable = false)
-    @NotBlank(message = "type is mandatory")
-    private String type;
+    @NotNull(message = "type is mandatory")
+    @Enumerated(EnumType.STRING)
+    private TransactionType type;
 
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     @NotNull(message = "amount is mandatory")
+    @Positive(message = "amount must be positive")
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal amount;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -36,6 +67,7 @@ public class Transaction {
     private Date timestamp;
 
     @Column(name = "currency", nullable = false)
-    @NotBlank(message = "currency is mandatory")
-    private String currency;
+    @NotNull(message = "currency is mandatory")
+    @Enumerated(EnumType.STRING)
+    private CurrencyType currency;
 }

@@ -1,5 +1,6 @@
 package org.example.backender101homebanking.dto;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -23,6 +24,7 @@ public class TransactionDTO {
 
     @NotNull(message = "amount is mandatory")
     @Positive(message = "amount must be positive")
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal amount;
 
     @NotBlank(message = "currency is mandatory")

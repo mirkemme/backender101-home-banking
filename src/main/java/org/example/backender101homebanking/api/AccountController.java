@@ -2,10 +2,7 @@ package org.example.backender101homebanking.api;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backender101homebanking.dto.AccountDTO;
-import org.example.backender101homebanking.dto.AccountResponseDTO;
-import org.example.backender101homebanking.dto.BalanceResponseDTO;
-import org.example.backender101homebanking.dto.TransactionDTO;
+import org.example.backender101homebanking.dto.*;
 import org.example.backender101homebanking.service.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +36,8 @@ public class AccountController {
     }
 
     @GetMapping("/{accountNumber}/transactions")
-    public ResponseEntity<List<TransactionDTO>> getAccountTransactions(@PathVariable String accountNumber) {
-        List<TransactionDTO> transactions = accountService.getAccountTransactions(accountNumber);
+    public ResponseEntity<List<TransactionResponseDTO>> getLast5Transactions(@PathVariable String accountNumber) {
+        List<TransactionResponseDTO> transactions = accountService.getLast5Transactions(accountNumber);
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 

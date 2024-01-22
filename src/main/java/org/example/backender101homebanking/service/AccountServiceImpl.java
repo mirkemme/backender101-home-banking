@@ -5,14 +5,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.*;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.AccountMapper;
+import org.example.backender101homebanking.mapper.TransactionMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
 import org.example.backender101homebanking.model.Account;
+import org.example.backender101homebanking.model.Transaction;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.AccountRepository;
+import org.example.backender101homebanking.repository.TransactionRepository;
 import org.example.backender101homebanking.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +24,10 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
+    private final TransactionMapper transactionMapper;
 
     @Override
     public List<AccountResponseDTO> getAllAccounts() {
@@ -63,9 +67,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<TransactionDTO> getAccountTransactions(String accountNumber) {
-        // da implementare dopo la feature Transaction
-        return Collections.emptyList();
+    public List<TransactionResponseDTO> getLast5Transactions(String accountNumber) {
+        Account account = accountRepository.findById(accountNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+
+        List<Transaction> allTransactions = transactionRepository.findAllByAccountNumberOrderByTimestampDesc(account.getNumber());
+        List<Transaction> last5Transactions = allTransactions.subList(0, Math.min(allTransactions.size(), 5));
+
+        List<TransactionResponseDTO> transactionResponseDTOs = last5Transactions.stream()
+                .map(transactionMapper::convertToResponseDto)
+                .collect(Collectors.toList());
+
+        return transactionResponseDTOs;
     }
 
     @Override
