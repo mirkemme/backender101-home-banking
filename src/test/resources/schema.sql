@@ -1,7 +1,7 @@
-CREATE TABLE IF NOT EXISTS USERS (
-    ID INT PRIMARY KEY AUTO_INCREMENT,
-    FIRSTNAME VARCHAR(255),
-    LASTNAME VARCHAR(255),
-    EMAIL VARCHAR(255),
-    PASSWORD VARCHAR(255)
-    );
+CREATE TABLE person (
+                       id INT PRIMARY KEY AUTO_INCREMENT,
+                       first_name VARCHAR(255) NOT NULL,
+                       last_name VARCHAR(255) NOT NULL,
+                       password VARCHAR(255) NOT NULL,
+                       email VARCHAR(255) NOT NULL UNIQUE
+);
