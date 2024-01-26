@@ -3,14 +3,14 @@ package org.example.backender101homebanking.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @Entity
 @Data
-@NoArgsConstructor
-@Table (name = "user")
+@RequiredArgsConstructor
+@Table (name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
