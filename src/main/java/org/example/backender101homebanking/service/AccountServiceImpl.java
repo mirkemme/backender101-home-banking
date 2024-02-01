@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.backender101homebanking.utils.UserIdValidator.validateUserIds;
+
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -51,7 +53,7 @@ public class AccountServiceImpl implements AccountService {
 
     public BalanceResponseDTO getAccountBalance(String accountNumber) {
         Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
         BalanceResponseDTO balanceResponseDTO = new BalanceResponseDTO(account.getBalance());
         return balanceResponseDTO;
     }
@@ -59,11 +61,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDTO createAccount(AccountDTO accountDTO) {
         List<User> users = userRepository.findAllById(accountDTO.getUserIds());
+        validateUserIds(accountDTO.getUserIds(), users);
         Account account = accountMapper.convertToEntity(accountDTO);
         account.setUsers(users);
         Account savedAccount = accountRepository.save(account);
 
-        return accountMapper.convertToDto(savedAccount);
+        return accountDTO;
     }
 
     @Override

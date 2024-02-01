@@ -2,6 +2,7 @@ package org.example.backender101homebanking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.exception.BadRequestException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.ManualUserMapper;
 import org.example.backender101homebanking.model.User;
@@ -37,6 +38,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO addUser(UserDTO userDTO) {
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new BadRequestException("Email already exists: " + userDTO.getEmail());
+        }
+
         User user = manualUserMapper.convertToEntity(userDTO);
         User savedUser = userRepository.save(user);
 
