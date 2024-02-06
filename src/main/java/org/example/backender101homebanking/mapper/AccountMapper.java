@@ -7,8 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
-    AccountDTO convertToDto(Account account);
     @Mapping(target = "transactions", ignore = true)
-    //@Mapping(target = "users", ignore = true)
+    @Mapping(target = "users", ignore = true)
     Account convertToEntity(AccountDTO accountDTO);
 }

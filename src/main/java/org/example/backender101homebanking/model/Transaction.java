@@ -4,25 +4,24 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
+@Getter
+@Setter
 @Data
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "transaction")
 public class Transaction {
     public enum TransactionType {
         DEPOSIT,
         WITHDRAW;
-
         public String toString() {
             return name().toLowerCase();
         }
-
         public static TransactionType fromString(String value) {
             return valueOf(value.toUpperCase());
         }
@@ -32,11 +31,9 @@ public class Transaction {
         EURO,
         DOLLAR,
         YEN;
-
         public String toString() {
             return name().toLowerCase();
         }
-
         public static CurrencyType fromString(String value) {
             return valueOf(value.toUpperCase());
         }

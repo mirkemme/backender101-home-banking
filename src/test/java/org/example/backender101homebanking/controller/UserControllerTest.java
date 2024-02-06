@@ -1,6 +1,7 @@
 package org.example.backender101homebanking.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import org.example.backender101homebanking.MockMvcRestExceptionConfiguration;
 import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.model.Account;
@@ -28,17 +29,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {MockMvcRestExceptionConfiguration.class})
 public class UserControllerTest {
     @Autowired
+    private EntityManager entityManager;
+    @Autowired
     private MockMvc mockMvc;
 
     @Test
     @Transactional
     @DisplayName("GET /api/v1/users/all - Success")
     public void testGetAllUsers() throws Exception {
-        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"));
-        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"));
+        User user1 = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        User user2 = buildUser("name-user2", "surname-user2", "987654321", "user2@email.com");
+        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user1));
+        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"), Collections.singletonList(user2));
 
-        User user1 = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com", Collections.singletonList(account1));
-        User user2 = buildUser("name-user2", "surname-user2", "987654321", "user2@email.com", Collections.singletonList(account2));
+        entityManager.merge(user1);
+        entityManager.merge(user2);
+        entityManager.merge(account1);
+        entityManager.merge(account2);
+        entityManager.flush();
 
         mockMvc.perform(get("/api/v1/users/all")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -56,8 +64,12 @@ public class UserControllerTest {
     @Transactional
     @DisplayName("GET /api/v1/users/{userId} - Success")
     public void testGetUserById() throws Exception {
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"));
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com", Collections.singletonList(account));
+        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+
+        entityManager.merge(user);
+        entityManager.merge(account);
+        entityManager.flush();
 
         mockMvc.perform(get("/api/v1/users/{userId}", user.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -89,8 +101,12 @@ public class UserControllerTest {
     @Transactional
     @DisplayName("PUT /api/v1/users/{userId} - Success")
     public void testUpdateUser() throws Exception {
-        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"));
-        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com", Collections.singletonList(existingAccount));
+        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(existingUser));
+
+        entityManager.merge(existingUser);
+        entityManager.merge(existingAccount);
+        entityManager.flush();
 
         UserDTO updatedUserDTO = new UserDTO();
         updatedUserDTO.setFirstName("updated-name");
@@ -112,12 +128,18 @@ public class UserControllerTest {
     @Transactional
     @DisplayName("DELETE /api/v1/users/{userId} - Success")
     public void testDeleteUser() throws Exception {
-        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"));
-        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com", Collections.singletonList(existingAccount));
+        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(existingUser));
+
+        entityManager.merge(existingUser);
+        entityManager.merge(existingAccount);
+        entityManager.flush();
 
         mockMvc.perform(delete("/api/v1/users/{userId}", existingUser.getId()))
                 .andExpect(status().isOk());
     }
+
+    /********** FAILURE TESTS **********/
 
     @Test
     @DisplayName("GET /api/v1/users/{userId} - Failure: Resource Not Found")
@@ -135,8 +157,12 @@ public class UserControllerTest {
     @Transactional
     @DisplayName("POST /api/v1/users - Failure: Bad Request")
     public void testAddUserFailure() throws Exception {
-        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"));
-        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com", Collections.singletonList(existingAccount));
+        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(existingUser));
+
+        entityManager.merge(existingUser);
+        entityManager.merge(existingAccount);
+        entityManager.flush();
 
         UserDTO requestUserDTO = buildUserDTO("name-user2", "surname-user2", "123123123", "user1@email.com");
 
@@ -147,15 +173,18 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(400));
-                //.andExpect(jsonPath("$.message").value("Bad Request: User with this email already exists"));
     }
 
     @Test
     @Transactional
     @DisplayName("PUT /api/v1/users/{userId} - Failure: Resource Not Found")
     public void testUpdateUserFailure() throws Exception {
-        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"));
-        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com", Collections.singletonList(existingAccount));
+        User existingUser = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        Account existingAccount = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(existingUser));
+
+        entityManager.merge(existingUser);
+        entityManager.merge(existingAccount);
+        entityManager.flush();
 
         UserDTO updatedUserDTO = new UserDTO();
         updatedUserDTO.setFirstName("updated-name");

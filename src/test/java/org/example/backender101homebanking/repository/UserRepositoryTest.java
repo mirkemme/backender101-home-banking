@@ -14,10 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.properties")
 public class UserRepositoryTest {
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private TestEntityManager entityManager;
 

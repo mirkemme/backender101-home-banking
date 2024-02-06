@@ -1,9 +1,9 @@
 package org.example.backender101homebanking.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.TransactionDTO;
 import org.example.backender101homebanking.exception.InsufficientBalanceException;
+import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.TransactionMapper;
 import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.Transaction;
@@ -22,7 +22,9 @@ public class TransactionServiceImpl implements TransactionService  {
     private final TransactionMapper transactionMapper;
 
     public TransactionDTO withdraw(TransactionDTO transactionDTO) {
-        Account account = getAccount(transactionDTO.getAccountNumber());
+        Account account = accountRepository.findById(transactionDTO.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
         BigDecimal currentBalance = account.getBalance();
         BigDecimal withdrawalAmount = transactionDTO.getAmount();
 
@@ -45,12 +47,12 @@ public class TransactionServiceImpl implements TransactionService  {
     }
 
     public TransactionDTO deposit(TransactionDTO transactionDTO) {
-        Account account = getAccount(transactionDTO.getAccountNumber());
+        Account account = accountRepository.findById(transactionDTO.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         BigDecimal currentBalance = account.getBalance();
         BigDecimal withdrawalAmount = transactionDTO.getAmount();
 
-        // Esegui il versamento
         BigDecimal newBalance = currentBalance.add(withdrawalAmount);
         account.setBalance(newBalance);
 
@@ -63,10 +65,5 @@ public class TransactionServiceImpl implements TransactionService  {
         transactionDTO.setId(transaction.getId());
 
         return transactionDTO;
-    }
-
-    private Account getAccount(String accountNumber) {
-        return accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
     }
 }
