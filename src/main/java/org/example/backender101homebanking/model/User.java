@@ -3,14 +3,17 @@ package org.example.backender101homebanking.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Data
-@NoArgsConstructor
-@Table (name = "user")
+@RequiredArgsConstructor
+@Table (name = "person")
+//@Table (name = "user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +35,4 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     @NotBlank(message = "email is mandatory")
     private String email;
-
-    @ManyToMany(mappedBy = "users")
-    private List<Account> accounts;
 }

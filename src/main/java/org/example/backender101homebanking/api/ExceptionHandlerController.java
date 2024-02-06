@@ -2,6 +2,7 @@ package org.example.backender101homebanking.api;
 
 import org.apache.coyote.BadRequestException;
 import org.example.backender101homebanking.dto.error.ErrorResponse;
+import org.example.backender101homebanking.exception.InsufficientBalanceException;
 import org.example.backender101homebanking.exception.InternalServerErrorException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,11 @@ public class ExceptionHandlerController {
     @ExceptionHandler(InternalServerErrorException.class)
     public ResponseEntity<ErrorResponse> handleInternalServerErrorException(InternalServerErrorException e) {
         return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientBalanceException(InsufficientBalanceException e) {
+        return buildErrorResponse(e, HttpStatus.FORBIDDEN);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(Exception e, HttpStatus status) {

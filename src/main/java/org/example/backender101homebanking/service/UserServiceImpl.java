@@ -2,8 +2,9 @@ package org.example.backender101homebanking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.exception.BadRequestException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
-import org.example.backender101homebanking.mapper.ManualUserMapper;
+import org.example.backender101homebanking.mapper.UserMapper;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -16,14 +17,14 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final ManualUserMapper manualUserMapper;
+    private final UserMapper userMapper;
 
     @Override
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
 
         return users.stream()
-                .map(manualUserMapper::convertToDTO)
+                .map(userMapper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -32,15 +33,19 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        return manualUserMapper.convertToDTO(user);
+        return userMapper.convertToDTO(user);
     }
 
     @Override
     public UserDTO addUser(UserDTO userDTO) {
-        User user = manualUserMapper.convertToEntity(userDTO);
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new BadRequestException("Email already exists: " + userDTO.getEmail());
+        }
+
+        User user = userMapper.convertToEntity(userDTO);
         User savedUser = userRepository.save(user);
 
-        return manualUserMapper.convertToDTO(savedUser);
+        return userMapper.convertToDTO(savedUser);
     }
 
     @Override
@@ -48,10 +53,10 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        manualUserMapper.updateUserFromDTO(existingUser, userDTO);
+        userMapper.updateUserFromUserDTO(userDTO, existingUser);
         User updatedUser = userRepository.save(existingUser);
 
-        return manualUserMapper.convertToDTO(updatedUser);
+        return userMapper.convertToDTO(updatedUser);
     }
 
     @Override

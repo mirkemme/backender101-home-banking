@@ -15,7 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
-
     @GetMapping("/all")
     public ResponseEntity<List<AccountResponseDTO>> getAllAccounts() {
         List<AccountResponseDTO> accounts = accountService.getAllAccounts();

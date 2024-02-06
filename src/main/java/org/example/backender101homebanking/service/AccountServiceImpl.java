@@ -1,6 +1,5 @@
 package org.example.backender101homebanking.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.*;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
@@ -18,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.backender101homebanking.utils.UserIdValidator.validateUserIds;
+
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -32,6 +33,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<AccountResponseDTO> getAllAccounts() {
         List<Account> accounts = accountRepository.findAll();
+
         return accounts.stream()
                 .map(account -> {
                     AccountResponseDTO accountResponseDTO = new AccountResponseDTO();
@@ -39,7 +41,7 @@ public class AccountServiceImpl implements AccountService {
                     accountResponseDTO.setBalance(account.getBalance());
 
                     List<UserDTO> users = account.getUsers().stream()
-                            .map(userMapper::convertToDto)
+                            .map(userMapper::convertToDTO)
                             .collect(Collectors.toList());
 
                     accountResponseDTO.setUsers(users);
@@ -51,7 +53,7 @@ public class AccountServiceImpl implements AccountService {
 
     public BalanceResponseDTO getAccountBalance(String accountNumber) {
         Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
         BalanceResponseDTO balanceResponseDTO = new BalanceResponseDTO(account.getBalance());
         return balanceResponseDTO;
     }
@@ -59,17 +61,18 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDTO createAccount(AccountDTO accountDTO) {
         List<User> users = userRepository.findAllById(accountDTO.getUserIds());
+        validateUserIds(accountDTO.getUserIds(), users);
         Account account = accountMapper.convertToEntity(accountDTO);
         account.setUsers(users);
         Account savedAccount = accountRepository.save(account);
 
-        return accountMapper.convertToDto(savedAccount);
+        return accountDTO;
     }
 
     @Override
     public List<TransactionResponseDTO> getLast5Transactions(String accountNumber) {
         Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         List<Transaction> allTransactions = transactionRepository.findAllByAccountNumberOrderByTimestampDesc(account.getNumber());
         List<Transaction> last5Transactions = allTransactions.subList(0, Math.min(allTransactions.size(), 5));
