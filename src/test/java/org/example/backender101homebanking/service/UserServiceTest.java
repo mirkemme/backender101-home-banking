@@ -1,8 +1,11 @@
 package org.example.backender101homebanking.service;
 
+import org.example.backender101homebanking.dto.AccountRequestDTO;
 import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
+import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
+import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -12,9 +15,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.example.backender101homebanking.utils.TestObjectFactory.buildAccount;
+import static org.example.backender101homebanking.utils.TestObjectFactory.buildUser;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -26,21 +34,31 @@ public class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private UserMapper userMapper;
+    @Mock
+    private AccountMapper accountMapper;
     @InjectMocks
     private UserServiceImpl userService;
     @Test
     @DisplayName("UnitTest getAllUsers Success")
     public void testGetAllUsers() {
-        when(userRepository.findAll()).thenReturn(List.of(new User(), new User()));
+        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"), Collections.singletonList(user));
+        List<Account> accounts = Arrays.asList(account1, account2);
+        user.setAccounts(accounts);
+
+        when(accountMapper.convertToAccountRequestDTO(account1)).thenReturn(new AccountRequestDTO());
+        when(accountMapper.convertToAccountRequestDTO(account2)).thenReturn(new AccountRequestDTO());
+        when(userRepository.findAll()).thenReturn(Collections.singletonList(user));
         when(userMapper.convertToDTO(any(User.class))).thenReturn(new UserDTO());
 
         List<UserDTO> result = userService.getAllUsers();
 
         verify(userRepository, times(1)).findAll();
-        verify(userMapper, times(2)).convertToDTO(any(User.class));
+        verify(userMapper, times(1)).convertToDTO(any(User.class));
 
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertEquals(1, result.size());
     }
 
     @Test

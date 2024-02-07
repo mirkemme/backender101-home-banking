@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -22,12 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.example.backender101homebanking.utils.TestObjectFactory.*;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class AccountControllerTest {
     @Autowired
     private EntityManager entityManager;
@@ -35,7 +35,6 @@ public class AccountControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    @Transactional
     @DisplayName("GET /api/v1/accounts/all - Success")
     public void testGetAllAccounts() throws Exception {
         User user1 = buildUser( "name-user1", "surname-user1", "123456789", "user1@email.com");
@@ -62,7 +61,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("GET /api/v1/accounts/{accountNumber}/balance - Success")
     public void testGetAccountBalance() throws Exception {
         User user = buildUser( "name-user1", "surname-user1", "123456789", "user1@email.com");
@@ -81,7 +79,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("POST /api/v1/accounts - Success")
     public void testCreateAccount() throws Exception {
         AccountDTO requestAccountDTO = new AccountDTO();
@@ -101,21 +98,14 @@ public class AccountControllerTest {
         entityManager.merge(account2);
         entityManager.flush();
 
-        ResultActions result = mockMvc.perform(post("/api/v1/accounts")
+        mockMvc.perform(post("/api/v1/accounts")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(requestAccountDTO)));
-
-                result.andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.number").value("ACC003"))
-                .andExpect(jsonPath("$.balance").value(3000.00))
-                .andExpect(jsonPath("$.userIds", hasSize(2)))
-                .andExpect(jsonPath("$.userIds[0]").value(1))
-                .andExpect(jsonPath("$.userIds[1]").value(2));
+                .content(new ObjectMapper().writeValueAsString(requestAccountDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(content().string(is("ACC003")));
     }
 
     @Test
-    @Transactional
     @DisplayName("GET /api/v1/accounts/{accountNumber}/transactions - Success")
     public void testGetLast5Transactions() throws Exception {
         User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
@@ -141,7 +131,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("DELETE /api/v1/accounts/{accountNumber} - Success")
     public void testDeleteAccount() throws Exception {
         User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
@@ -158,7 +147,6 @@ public class AccountControllerTest {
     /********** FAILURE TESTS **********/
 
     @Test
-    @Transactional
     @DisplayName("GET /api/v1/accounts/all - Failure: Resource Not Found")
     public void testGetAllAccountsFailure() throws Exception {
         mockMvc.perform(get("/api/v1/accounts/all/invalidPath")
@@ -167,7 +155,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("GET /api/v1/accounts/{accountNumber}/balance - ResourceNotFoundException")
     public void testGetAccountBalanceFailure() throws Exception {
         String nonExistingAccountNumber = "ACC123456";
@@ -177,7 +164,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("POST /api/v1/accounts - Failure: User IDs not found")
     public void testCreateAccountFailureUserIdsNotFound() throws Exception {
         AccountDTO requestAccountDTO = new AccountDTO();
@@ -186,11 +172,10 @@ public class AccountControllerTest {
         List<Integer> nonExistingUserIds = Arrays.asList(100, 200);
         requestAccountDTO.setUserIds(nonExistingUserIds);
 
-        ResultActions result = mockMvc.perform(post("/api/v1/accounts")
+        mockMvc.perform(post("/api/v1/accounts")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(requestAccountDTO)));
-
-        result.andExpect(status().isNotFound())
+                .content(new ObjectMapper().writeValueAsString(requestAccountDTO)))
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.statusCode").value(404));
     }

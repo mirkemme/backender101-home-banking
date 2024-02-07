@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -35,4 +37,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     @NotBlank(message = "email is mandatory")
     private String email;
+
+    @ManyToMany(mappedBy = "users")
+    private List<Account> accounts;
 }

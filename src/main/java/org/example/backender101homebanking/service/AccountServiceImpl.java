@@ -7,10 +7,8 @@ import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.TransactionMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
 import org.example.backender101homebanking.model.Account;
-import org.example.backender101homebanking.model.Transaction;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.AccountRepository;
-import org.example.backender101homebanking.repository.TransactionRepository;
 import org.example.backender101homebanking.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +23,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
-    private final TransactionRepository transactionRepository;
+    private final TransactionService transactionService;
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
     private final TransactionMapper transactionMapper;
@@ -40,8 +38,8 @@ public class AccountServiceImpl implements AccountService {
                     accountResponseDTO.setNumber(account.getNumber());
                     accountResponseDTO.setBalance(account.getBalance());
 
-                    List<UserDTO> users = account.getUsers().stream()
-                            .map(userMapper::convertToDTO)
+                    List<UserRequestDTO> users = account.getUsers().stream()
+                            .map(userMapper::convertToUserRequestDTO)
                             .collect(Collectors.toList());
 
                     accountResponseDTO.setUsers(users);
@@ -59,14 +57,19 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountDTO createAccount(AccountDTO accountDTO) {
+    public String createAccount(AccountDTO accountDTO) {
         List<User> users = userRepository.findAllById(accountDTO.getUserIds());
         validateUserIds(accountDTO.getUserIds(), users);
         Account account = accountMapper.convertToEntity(accountDTO);
-        account.setUsers(users);
-        Account savedAccount = accountRepository.save(account);
 
-        return accountDTO;
+        for (User user : users) {
+            user.getAccounts().add(account);
+        }
+
+        account.setUsers(users);
+        accountRepository.save(account);
+
+        return account.getNumber();
     }
 
     @Override
@@ -74,12 +77,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findById(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
-        List<Transaction> allTransactions = transactionRepository.findAllByAccountNumberOrderByTimestampDesc(account.getNumber());
-        List<Transaction> last5Transactions = allTransactions.subList(0, Math.min(allTransactions.size(), 5));
-
-        List<TransactionResponseDTO> transactionResponseDTOs = last5Transactions.stream()
-                .map(transactionMapper::convertToResponseDto)
-                .collect(Collectors.toList());
+        List<TransactionResponseDTO> transactionResponseDTOs = transactionService.getLast5Transactions(account);
 
         return transactionResponseDTOs;
     }

@@ -43,14 +43,16 @@ public class AccountServiceTest {
     private UserRepository userRepository;
     @Mock
     private AccountMapper accountMapper;
-    @Captor
-    private ArgumentCaptor<Account> accountCaptor;
+    @Mock
+    private TransactionService transactionService;
     @Mock
     private TransactionRepository transactionRepository;
     @Mock
     private TransactionMapper transactionMapper;
     @InjectMocks
     private AccountServiceImpl accountService;
+    @Captor
+    private ArgumentCaptor<Account> accountCaptor;
 
     @Test
     @DisplayName("UnitTest getAllAccounts Success")
@@ -103,7 +105,7 @@ public class AccountServiceTest {
         when(accountMapper.convertToEntity(accountDTO)).thenReturn(account);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
 
-        AccountDTO result = accountService.createAccount(accountDTO);
+        String result = accountService.createAccount(accountDTO);
 
         verify(accountRepository, times(1)).save(accountCaptor.capture());
         Account capturedAccount = accountCaptor.getValue();
@@ -135,24 +137,19 @@ public class AccountServiceTest {
                 buildTransaction(account, new BigDecimal("500.0"), Transaction.CurrencyType.EURO, Transaction.TransactionType.WITHDRAW),
                 buildTransaction(account, new BigDecimal("2000.0"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT)
         );
+        List<TransactionResponseDTO> transactionResponseDTOs = Arrays.asList(
+                buildTransactionResponseDTO(accountNumber, "DEPOSIT", "EURO"),
+                buildTransactionResponseDTO(accountNumber, "WITHDRAW", "EURO"),
+                buildTransactionResponseDTO(accountNumber, "DEPOSIT", "EURO")
+        );
 
         when(accountRepository.findById(accountNumber)).thenReturn(Optional.of(account));
-        when(transactionRepository.findAllByAccountNumberOrderByTimestampDesc(accountNumber)).thenReturn(transactions);
-        when(transactionMapper.convertToResponseDto(any(Transaction.class))).thenAnswer(
-                invocation -> {
-                    Transaction inputTransaction = invocation.getArgument(0);
-                    TransactionResponseDTO responseDTO = new TransactionResponseDTO();
-                    responseDTO.setAccountNumber(inputTransaction.getAccount().getNumber());
-                    responseDTO.setType(inputTransaction.getType().toString());
-                    responseDTO.setCurrency(inputTransaction.getCurrency().toString());
-                    return responseDTO;
-                });
+        when(transactionService.getLast5Transactions(account)).thenReturn(transactionResponseDTOs);
 
         List<TransactionResponseDTO> result = accountService.getLast5Transactions(accountNumber);
 
         verify(accountRepository, times(1)).findById(accountNumber);
-        verify(transactionRepository, times(1)).findAllByAccountNumberOrderByTimestampDesc(accountNumber);
-        verify(transactionMapper, times(transactions.size())).convertToResponseDto(any(Transaction.class));
+        verify(transactionService, times(1)).getLast5Transactions(account);
 
         assertNotNull(result);
         assertEquals(transactions.size(), result.size());

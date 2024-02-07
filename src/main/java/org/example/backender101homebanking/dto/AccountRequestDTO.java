@@ -5,13 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class AccountResponseDTO {
+public class AccountRequestDTO {
     private String number;
     private BigDecimal balance;
-    private List<UserRequestDTO> users;
 }
