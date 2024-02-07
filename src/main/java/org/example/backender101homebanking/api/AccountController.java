@@ -29,9 +29,9 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        AccountDTO savedAccount = accountService.createAccount(accountDTO);
-        return new ResponseEntity<>(savedAccount, HttpStatus.CREATED);
+    public ResponseEntity<String> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
+        String savedAccountNumber = accountService.createAccount(accountDTO);
+        return new ResponseEntity<>(savedAccountNumber, HttpStatus.CREATED);
     }
 
     @GetMapping("/{accountNumber}/transactions")

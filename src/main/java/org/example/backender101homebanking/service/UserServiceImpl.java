@@ -1,10 +1,13 @@
 package org.example.backender101homebanking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backender101homebanking.dto.AccountRequestDTO;
 import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.exception.BadRequestException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
+import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
+import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,13 +21,22 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AccountMapper accountMapper;
 
     @Override
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
 
         return users.stream()
-                .map(userMapper::convertToDTO)
+                .map(user -> {
+                    UserDTO userDTO = userMapper.convertToDTO(user);
+                    List<Account> accounts = user.getAccounts();
+                    List<AccountRequestDTO> accountRequestDTOSDTOs = accounts.stream()
+                            .map(accountMapper::convertToAccountRequestDTO)
+                            .collect(Collectors.toList());
+                    userDTO.setAccounts(accountRequestDTOSDTOs);
+                    return userDTO;
+                })
                 .collect(Collectors.toList());
     }
 

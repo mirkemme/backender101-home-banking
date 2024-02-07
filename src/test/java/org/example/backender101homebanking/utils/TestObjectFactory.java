@@ -1,6 +1,7 @@
 package org.example.backender101homebanking.utils;
 
 import org.example.backender101homebanking.dto.TransactionDTO;
+import org.example.backender101homebanking.dto.TransactionResponseDTO;
 import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.Transaction;
@@ -41,6 +42,7 @@ public class TestObjectFactory {
         user.setLastName(lastName);
         user.setPassword(password);
         user.setEmail(email);
+        user.setAccounts(new ArrayList<>());
 
         return user;
     }
@@ -51,6 +53,7 @@ public class TestObjectFactory {
         userDTO.setLastName(lastName);
         userDTO.setPassword(password);
         userDTO.setEmail(email);
+        userDTO.setAccounts(new ArrayList<>());
 
         return userDTO;
     }
@@ -65,4 +68,12 @@ public class TestObjectFactory {
 
         return transactionDTO;
     }
+    public static TransactionResponseDTO buildTransactionResponseDTO(String accountNumber, String type, String currency) {
+        TransactionResponseDTO responseDTO = new TransactionResponseDTO();
+        responseDTO.setAccountNumber(accountNumber);
+        responseDTO.setType(type);
+        responseDTO.setCurrency(currency);
+        return responseDTO;
+    }
+
 }

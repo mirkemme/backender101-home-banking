@@ -14,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -86,11 +85,10 @@ public class UserControllerTest {
     public void testAddUser() throws Exception {
         UserDTO requestUserDTO = buildUserDTO("name-user1", "surname-user1", "123123123", "user1@email.com");
 
-        ResultActions result = mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(requestUserDTO)));
-
-        result.andExpect(status().isCreated())
+                .content(new ObjectMapper().writeValueAsString(requestUserDTO)))
+                .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.firstName").value("name-user1"))
                 .andExpect(jsonPath("$.lastName").value("surname-user1"))
@@ -114,11 +112,10 @@ public class UserControllerTest {
         updatedUserDTO.setEmail(existingUser.getEmail());
         updatedUserDTO.setPassword(existingUser.getPassword());
 
-        ResultActions result = mockMvc.perform(put("/api/v1/users/{userId}", existingUser.getId())
+        mockMvc.perform(put("/api/v1/users/{userId}", existingUser.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(updatedUserDTO)));
-
-        result.andExpect(status().isOk())
+                .content(new ObjectMapper().writeValueAsString(updatedUserDTO)))
+                .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.firstName").value("updated-name"))
                 .andExpect(jsonPath("$.lastName").value("updated-surname"));

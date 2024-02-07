@@ -6,12 +6,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class UserDTO {
+public class UserRequestDTO {
     private int id;
 
     @NotBlank(message = "firstName is mandatory")
@@ -26,6 +24,4 @@ public class UserDTO {
     @NotBlank(message = "email is mandatory")
     @Email(message = "Invalid email format")
     private String email;
-
-    private List<AccountRequestDTO> accounts;
 }

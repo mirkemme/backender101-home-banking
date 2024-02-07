@@ -2,6 +2,7 @@ package org.example.backender101homebanking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.TransactionDTO;
+import org.example.backender101homebanking.dto.TransactionResponseDTO;
 import org.example.backender101homebanking.exception.InsufficientBalanceException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.TransactionMapper;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,5 +68,17 @@ public class TransactionServiceImpl implements TransactionService  {
         transactionDTO.setId(transaction.getId());
 
         return transactionDTO;
+    }
+
+    @Override
+    public List<TransactionResponseDTO> getLast5Transactions(Account account) {
+        List<Transaction> allTransactions = transactionRepository.findAllByAccountNumberOrderByTimestampDesc(account.getNumber());
+        List<Transaction> last5Transactions = allTransactions.subList(0, Math.min(allTransactions.size(), 5));
+
+        List<TransactionResponseDTO> transactionResponseDTOs = last5Transactions.stream()
+                .map(transactionMapper::convertToResponseDto)
+                .collect(Collectors.toList());
+
+        return transactionResponseDTOs;
     }
 }
