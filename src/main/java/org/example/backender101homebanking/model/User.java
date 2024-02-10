@@ -14,8 +14,8 @@ import java.util.List;
 @Setter
 @Data
 @RequiredArgsConstructor
-@Table (name = "person")
-//@Table (name = "user")
+//@Table (name = "person")
+@Table (name = "user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
