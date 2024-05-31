@@ -3,13 +3,13 @@ package org.example.backender101homebanking.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.AccountRequestDTO;
 import org.example.backender101homebanking.dto.UserDTO;
-import org.example.backender101homebanking.exception.BadRequestException;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
 import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AccountMapper accountMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserDTO> getAllUsers() {
@@ -41,7 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUserById(int userId) {
+    public UserDTO getUserById(long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -49,33 +50,43 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO addUser(UserDTO userDTO) {
-        if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new BadRequestException("Email already exists: " + userDTO.getEmail());
-        }
-
-        User user = userMapper.convertToEntity(userDTO);
-        User savedUser = userRepository.save(user);
-
-        return userMapper.convertToDTO(savedUser);
+    public void addUser(User user) {
+        userRepository.save(user);
     }
 
     @Override
-    public UserDTO updateUser(int userId, UserDTO userDTO) {
+    public UserDTO updateUser(long userId, UserDTO userDTO) {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        } else {
+            userDTO.setPassword(existingUser.getPassword());
+        }
+
         userMapper.updateUserFromUserDTO(userDTO, existingUser);
+
         User updatedUser = userRepository.save(existingUser);
 
         return userMapper.convertToDTO(updatedUser);
     }
 
     @Override
-    public void deleteUser(int userId) {
+    public void deleteUser(long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         userRepository.delete(user);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 }

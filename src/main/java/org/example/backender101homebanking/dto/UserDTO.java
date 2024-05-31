@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class UserDTO {
-    private int id;
+    private long id;
 
     @NotBlank(message = "firstName is mandatory")
     private String firstName;
@@ -20,7 +20,6 @@ public class UserDTO {
     @NotBlank(message = "lastName is mandatory")
     private String lastName;
 
-    @NotBlank(message = "password is mandatory")
     private String password;
 
     @NotBlank(message = "email is mandatory")
