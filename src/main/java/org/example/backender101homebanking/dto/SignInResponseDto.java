@@ -1,15 +1,18 @@
 package org.example.backender101homebanking.dto;
 
-import lombok.Data;
-
-import java.util.List;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class SignInResponseDto {
-    private String token;
-    private String type = "Bearer";
-    private Long id;
-    private String username;
-    private String email;
-    private List<String> roles;
+    private boolean isSuccess;
+    private String message;
+    private Object response;
+
+    public SignInResponseDto(boolean isSuccess, String message) {
+        this.isSuccess = isSuccess;
+        this.message = message;
+        this.response = null;
+    }
 }

@@ -1,9 +1,9 @@
 package org.example.backender101homebanking.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backender101homebanking.dto.ApiResponseDto;
-import org.example.backender101homebanking.dto.SignInRequestDto;
 import org.example.backender101homebanking.dto.SignInResponseDto;
+import org.example.backender101homebanking.dto.SignInRequestDto;
+import org.example.backender101homebanking.dto.SignInUserDetailsResponseDto;
 import org.example.backender101homebanking.dto.SignUpRequestDto;
 import org.example.backender101homebanking.exception.RoleNotFoundException;
 import org.example.backender101homebanking.exception.UserAlreadyExistsException;
@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
 
     @Override
-    public ResponseEntity<ApiResponseDto<?>> signUpUser(SignUpRequestDto signUpRequestDto)
+    public ResponseEntity<SignInResponseDto> signUpUser(SignUpRequestDto signUpRequestDto)
             throws UserAlreadyExistsException, RoleNotFoundException {
         if (userService.existsByEmail(signUpRequestDto.getEmail())) {
             throw new UserAlreadyExistsException("Registration Failed: Provided email already exists. Try sign in or provide another email.");
@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = createUser(signUpRequestDto);
         userService.addUser(user);
-        ApiResponseDto<List<String>> responseDto = new ApiResponseDto<>(
+        SignInResponseDto responseDto = new SignInResponseDto(
                 true,
                 "User account has been successfully created!"
         );
@@ -82,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
 
     /* functionality for user sign-in */
     @Override
-    public ResponseEntity<ApiResponseDto<?>> signInUser(SignInRequestDto signInRequestDto) {
+    public ResponseEntity<SignInResponseDto> signInUser(SignInRequestDto signInRequestDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(), signInRequestDto.getPassword()));
 
@@ -94,18 +94,18 @@ public class AuthServiceImpl implements AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        SignInResponseDto signInResponseDto = new SignInResponseDto();
-        signInResponseDto.setUsername(userDetails.getUsername());
-        signInResponseDto.setEmail(userDetails.getEmail());
-        signInResponseDto.setId(userDetails.getId());
-        signInResponseDto.setToken(jwt);
-        signInResponseDto.setType("Bearer");
-        signInResponseDto.setRoles(roles);
+        SignInUserDetailsResponseDto signInUserDetailsResponseDto = new SignInUserDetailsResponseDto();
+        signInUserDetailsResponseDto.setUsername(userDetails.getUsername());
+        signInUserDetailsResponseDto.setEmail(userDetails.getEmail());
+        signInUserDetailsResponseDto.setId(userDetails.getId());
+        signInUserDetailsResponseDto.setToken(jwt);
+        signInUserDetailsResponseDto.setType("Bearer");
+        signInUserDetailsResponseDto.setRoles(roles);
 
-        ApiResponseDto<SignInResponseDto> responseDto = new ApiResponseDto<SignInResponseDto>();
+        SignInResponseDto responseDto = new SignInResponseDto();
         responseDto.setSuccess(true);
         responseDto.setMessage("Sign in successful!");
-        responseDto.setResponse(signInResponseDto);
+        responseDto.setResponse(signInUserDetailsResponseDto);
 
         return ResponseEntity.ok(responseDto);
     }

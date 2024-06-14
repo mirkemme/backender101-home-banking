@@ -24,7 +24,7 @@ public class RoleFactory {
             case "super_admin" -> {
                 return roleRepository.findByName(ERole.ROLE_SUPER_ADMIN);
             }
-            default -> throw  new RoleNotFoundException("No role found for " +  role);
+            default -> throw new RoleNotFoundException("No role found for " +  role);
         }
     }
 }

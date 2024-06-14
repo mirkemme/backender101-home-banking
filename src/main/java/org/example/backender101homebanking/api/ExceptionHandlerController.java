@@ -1,7 +1,7 @@
 package org.example.backender101homebanking.api;
 
 import org.apache.coyote.BadRequestException;
-import org.example.backender101homebanking.dto.ApiResponseDto;
+import org.example.backender101homebanking.dto.SignInResponseDto;
 import org.example.backender101homebanking.dto.error.ErrorResponse;
 import org.example.backender101homebanking.exception.*;
 import org.springframework.http.HttpStatus;
@@ -42,7 +42,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponseDto<?>> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException exception) {
+    public ResponseEntity<SignInResponseDto> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException exception) {
 
         List<String> errorMessage = new ArrayList<>();
 
@@ -50,7 +50,7 @@ public class ExceptionHandlerController {
             errorMessage.add(error.getDefaultMessage());
         });
 
-        ApiResponseDto<List<String>> responseDto = new ApiResponseDto<>(
+        SignInResponseDto responseDto = new SignInResponseDto(
                 false,
                 "Registration Failed: Please provide valid data.",
                 errorMessage
@@ -62,9 +62,9 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(value = UserAlreadyExistsException.class)
-    public ResponseEntity<ApiResponseDto<?>> UserAlreadyExistsExceptionHandler(UserAlreadyExistsException exception) {
+    public ResponseEntity<SignInResponseDto> UserAlreadyExistsExceptionHandler(UserAlreadyExistsException exception) {
 
-        ApiResponseDto<List<String>> responseDto = new ApiResponseDto<>(
+        SignInResponseDto responseDto = new SignInResponseDto(
                 false,
                 exception.getMessage()
         );
@@ -75,9 +75,9 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(value = RoleNotFoundException.class)
-    public ResponseEntity<ApiResponseDto<?>> RoleNotFoundExceptionHandler(RoleNotFoundException exception) {
+    public ResponseEntity<SignInResponseDto> RoleNotFoundExceptionHandler(RoleNotFoundException exception) {
 
-        ApiResponseDto<List<String>> responseDto = new ApiResponseDto<>(
+        SignInResponseDto responseDto = new SignInResponseDto(
                 false,
                 exception.getMessage()
         );

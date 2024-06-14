@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-// This class is a configuration class responsible for configuring Spring Security settings
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -53,16 +52,16 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Configures the security filter chain
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http
+                .cors(cors -> cors.disable())
+                .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                /* Allowing unauthenticated access to /api/v1/users/auth endpoints (which is responsible for handle
-                requests related to sign up and sign in) and requiring authentication for any other request */
-                        auth.requestMatchers("/api/v1/users/auth/**").permitAll()
+                        auth
+                                .requestMatchers("/api/v1/users/auth/**").permitAll()
                                 .requestMatchers("/api/v1/users/all").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 );
