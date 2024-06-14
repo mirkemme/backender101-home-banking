@@ -1,8 +1,13 @@
 package org.example.backender101homebanking.api;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backender101homebanking.dto.SignInResponseDto;
+import org.example.backender101homebanking.dto.SignInRequestDto;
+import org.example.backender101homebanking.dto.SignUpRequestDto;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.service.AuthService;
 import org.example.backender101homebanking.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +19,8 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
+
+    private final AuthService authService;
     private final UserService userService;
 
     @GetMapping("/all")
@@ -22,26 +29,33 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @GetMapping("/{userId}")
-    public @ResponseBody ResponseEntity<UserDTO> getUserById(@PathVariable int userId) {
+    @GetMapping("/me")
+    public @ResponseBody ResponseEntity<UserDTO> getUserById(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         UserDTO user = userService.getUserById(userId);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<UserDTO> addUser(@Valid @RequestBody UserDTO userDTO) {
-        UserDTO savedUser = userService.addUser(userDTO);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+    @PostMapping("/auth/signup")
+    public ResponseEntity<SignInResponseDto> addUser(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
+        return authService.signUpUser(signUpRequestDto);
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable int userId, @Valid @RequestBody UserDTO userDTO) {
+    @PostMapping("/auth/signin")
+    public ResponseEntity<SignInResponseDto> signInUser(@RequestBody @Valid SignInRequestDto signInRequestDto){
+        return authService.signInUser(signInRequestDto);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<UserDTO> updateUser(HttpServletRequest request, @Valid @RequestBody UserDTO userDTO) {
+        Long userId = (Long) request.getAttribute("userId");
         UserDTO updatedUser = userService.updateUser(userId, userDTO);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int userId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteUser(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         userService.deleteUser(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

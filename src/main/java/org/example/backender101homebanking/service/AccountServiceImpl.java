@@ -10,6 +10,7 @@ import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.AccountRepository;
 import org.example.backender101homebanking.repository.UserRepository;
+import org.example.backender101homebanking.utils.IbanGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
     private final TransactionMapper transactionMapper;
+    private final IbanGenerator ibanGenerator;
 
     @Override
     public List<AccountResponseDTO> getAllAccounts() {
@@ -67,6 +69,7 @@ public class AccountServiceImpl implements AccountService {
         }
 
         account.setUsers(users);
+        account.setNumber(ibanGenerator.generateIban());
         accountRepository.save(account);
 
         return account.getNumber();

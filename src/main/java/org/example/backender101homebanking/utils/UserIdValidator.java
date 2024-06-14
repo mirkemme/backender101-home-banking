@@ -8,12 +8,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UserIdValidator {
-    public static void validateUserIds(List<Integer> userIds, List<User> users) {
-        Set<Integer> validUserIds = users.stream()
+    public static void validateUserIds(List<Long> userIds, List<User> users) {
+        Set<Long> validUserIds = users.stream()
                 .map(User::getId)
                 .collect(Collectors.toSet());
 
-        List<Integer> invalidUserIds = userIds.stream()
+        List<Long> invalidUserIds = userIds.stream()
                 .filter(id -> !validUserIds.contains(id))
                 .toList();
 

@@ -9,8 +9,12 @@ import java.util.List;
 
 public interface AccountService {
     String createAccount(AccountDTO accountDTO);
+
     List<AccountResponseDTO> getAllAccounts();
+
     BalanceResponseDTO getAccountBalance(String accountNumber);
+
     void deleteAccount(String accountNumber);
+
     List<TransactionResponseDTO> getLast5Transactions(String accountNumber);
 }

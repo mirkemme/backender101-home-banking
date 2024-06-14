@@ -11,7 +11,6 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 public class AccountDTO {
-        private String number;
         private BigDecimal balance;
-        private List<Integer> userIds;
+        private List<Long> userIds;
 }
