@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +33,11 @@ public class TransactionControllerTest {
 
     @Test
     @Transactional
+    @WithMockUser
     @DisplayName("POST /api/v1/transactions/withdraw - Success")
     public void testWithdraw() throws Exception {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
 
         Transaction transaction1 = buildTransaction(account, new BigDecimal("100.00"), Transaction.CurrencyType.EURO, Transaction.TransactionType.WITHDRAW);
         Transaction transaction2 = buildTransaction(account, new BigDecimal("200.00"), Transaction.CurrencyType.EURO, Transaction.TransactionType.WITHDRAW);
@@ -46,7 +48,7 @@ public class TransactionControllerTest {
         entityManager.merge(transaction2);
         entityManager.flush();
 
-        TransactionDTO requestTransactionDTO = buildTransactionDTO("ACC001", "withdraw", new BigDecimal("300.00"), "euro");
+        TransactionDTO requestTransactionDTO = buildTransactionDTO("IT60X0542811101000000654321", "withdraw", new BigDecimal("300.00"), "euro");
 
         mockMvc.perform(post("/api/v1/transactions/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,10 +62,11 @@ public class TransactionControllerTest {
 
     @Test
     @Transactional
+    @WithMockUser
     @DisplayName("POST /api/v1/transactions/deposit - Success")
     public void testDeposit() throws Exception {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
 
         Transaction transaction1 = buildTransaction(account, new BigDecimal("100.00"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT);
         Transaction transaction2 = buildTransaction(account, new BigDecimal("200.00"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT);
@@ -74,7 +77,7 @@ public class TransactionControllerTest {
         entityManager.merge(transaction2);
         entityManager.flush();
 
-        TransactionDTO requestTransactionDTO = buildTransactionDTO("ACC001", "deposit", new BigDecimal("300.00"), "euro");
+        TransactionDTO requestTransactionDTO = buildTransactionDTO("IT60X0542811101000000654321", "deposit", new BigDecimal("300.00"), "euro");
 
         mockMvc.perform(post("/api/v1/transactions/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,10 +93,11 @@ public class TransactionControllerTest {
 
     @Test
     @Transactional
+    @WithMockUser
     @DisplayName("POST /api/v1/transactions/withdraw - Failure: Account not found")
     public void testWithdrawFailureAccountIdNotFound() throws Exception {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
 
         entityManager.merge(user);
         entityManager.merge(account);
@@ -109,10 +113,11 @@ public class TransactionControllerTest {
 
     @Test
     @Transactional
+    @WithMockUser
     @DisplayName("POST /api/v1/transactions/deposit - Failure: Account not found")
     public void testDepositFailureAccountIdNotFound() throws Exception {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
 
         entityManager.merge(user);
         entityManager.merge(account);

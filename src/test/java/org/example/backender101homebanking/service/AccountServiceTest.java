@@ -14,6 +14,7 @@ import org.example.backender101homebanking.model.User;
 import org.example.backender101homebanking.repository.AccountRepository;
 import org.example.backender101homebanking.repository.TransactionRepository;
 import org.example.backender101homebanking.repository.UserRepository;
+import org.example.backender101homebanking.utils.IbanGenerator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,8 @@ public class AccountServiceTest {
     private TransactionRepository transactionRepository;
     @Mock
     private TransactionMapper transactionMapper;
+    @Mock
+    private IbanGenerator ibanGenerator;
     @InjectMocks
     private AccountServiceImpl accountService;
     @Captor
@@ -57,9 +60,9 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest getAllAccounts Success")
     public void testGetAllAccounts() {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
-        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account1 = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
+        Account account2 = buildAccount("IT60X0542811101000000654322", new BigDecimal("2000.00"), Collections.singletonList(user));
         List<Account> accounts = Arrays.asList(account1, account2);
 
         when(accountRepository.findAll()).thenReturn(accounts);
@@ -74,63 +77,68 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest getAccountBalance Success")
     public void testGetAccountBalance() {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        String accountNumber = "ACC001";
-        BigDecimal initialBalance = new BigDecimal("1000.00");
-        Account account = buildAccount(accountNumber, initialBalance, Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        String accountNumber = "IT60X0542811101000000654321";
+        Account account = buildAccount(accountNumber, new BigDecimal("1000.00"), Collections.singletonList(user));
 
         when(accountRepository.findById(accountNumber)).thenReturn(Optional.of(account));
 
         BalanceResponseDTO result = accountService.getAccountBalance(accountNumber);
 
         assertNotNull(result);
-        assertEquals(initialBalance, result.getBalance());
+        assertEquals(new BigDecimal("1000.00"), result.getBalance());
         verify(accountRepository, times(1)).findById(accountNumber);
     }
 
     @Test
     @DisplayName("UnitTest createAccount Success")
     public void testCreateAccount() {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+
         List<User> users = Collections.singletonList(user);
 
         AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setNumber("ACC001");
         accountDTO.setBalance(new BigDecimal("1000.00"));
-        accountDTO.setUserIds(Arrays.asList(0));
+        accountDTO.setUserIds(Arrays.asList(0L));
 
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), users);
+        Account account = new Account();
+        account.setBalance(new BigDecimal("1000.00"));
+        account.setUsers(users);
 
         when(userRepository.findAllById(accountDTO.getUserIds())).thenReturn(users);
         when(accountMapper.convertToEntity(accountDTO)).thenReturn(account);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
+        when(ibanGenerator.generateIban()).thenReturn("IT60X0542811101000000654321");
 
         String result = accountService.createAccount(accountDTO);
+        String iban = ibanGenerator.generateIban();
 
         verify(accountRepository, times(1)).save(accountCaptor.capture());
+
         Account capturedAccount = accountCaptor.getValue();
 
         assertNotNull(result);
         assertEquals(users, capturedAccount.getUsers());
+        assertEquals(iban, "IT60X0542811101000000654321");
     }
 
     @Test
     @DisplayName("UnitTest deleteAccount Success")
     public void testDeleteAccountSuccess() {
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.emptyList());
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.emptyList());
 
-        when(accountRepository.findById("ACC001")).thenReturn(Optional.of(account));
+        when(accountRepository.findById("IT60X0542811101000000654321")).thenReturn(Optional.of(account));
 
-        assertDoesNotThrow(() -> accountService.deleteAccount("ACC001"));
+        assertDoesNotThrow(() -> accountService.deleteAccount("IT60X0542811101000000654321"));
 
-        verify(accountRepository, times(1)).findById("ACC001");
+        verify(accountRepository, times(1)).findById("IT60X0542811101000000654321");
         verify(accountRepository, times(1)).delete(account);
     }
 
     @Test
     @DisplayName("UnitTest getLast5Transactions Success")
     public void testGetLast5Transactions_Success() {
-        String accountNumber = "ACC001";
+        String accountNumber = "IT60X0542811101000000654321";
         Account account = buildAccount(accountNumber, new BigDecimal("1000.00"), Collections.emptyList());
         List<Transaction> transactions = Arrays.asList(
                 buildTransaction(account, new BigDecimal("1000.0"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT),
@@ -173,14 +181,13 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest createAccount Failure - Invalid User Ids")
     public void testCreateAccountFailure_InvalidUserIds() {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
         List<User> users = Collections.singletonList(user);
-        int notExistingUserId = 1;
+        Long notExistingUserId = 1L;
 
         AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setNumber("ACC001");
         accountDTO.setBalance(new BigDecimal("1000.00"));
-        accountDTO.setUserIds(Arrays.asList(0, notExistingUserId));
+        accountDTO.setUserIds(Arrays.asList(0L, notExistingUserId));
 
         when(userRepository.findAllById(accountDTO.getUserIds())).thenReturn(Collections.emptyList());
 
@@ -192,7 +199,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest deleteAccount Failure - Account not found")
     public void testDeleteAccountFailureAccountNotFound() {
-        String accountNumber = "ACC001";
+        String accountNumber = "IT60X0542811101000000654321";
 
         when(accountRepository.findById(accountNumber)).thenReturn(Optional.empty());
 
@@ -208,7 +215,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest getLast5Transactions Failure - Account not found")
     public void testGetLast5Transactions_AccountNotFound() {
-        String nonExistingAccountNumber = "NOT EXISTING ACCOUNT NUMBER";
+        String nonExistingAccountNumber = "IT60X0542811101000000654320";
 
         when(accountRepository.findById(nonExistingAccountNumber)).thenReturn(Optional.empty());
 

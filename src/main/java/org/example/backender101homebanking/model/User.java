@@ -16,8 +16,7 @@ import java.util.Set;
 @Setter
 @Data
 @RequiredArgsConstructor
-//@Table (name = "person")
-@Table (name = "user")
+@Table (name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

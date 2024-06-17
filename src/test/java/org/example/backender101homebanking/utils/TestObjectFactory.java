@@ -6,15 +6,19 @@ import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.Transaction;
 import org.example.backender101homebanking.model.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
 public class TestObjectFactory {
+
     public static Transaction buildTransaction(Account account, BigDecimal amount,  Transaction.CurrencyType currency, Transaction.TransactionType type) {
         Transaction transaction = new Transaction();
         transaction.setAccount(account);
@@ -36,13 +40,24 @@ public class TestObjectFactory {
         return account;
     }
 
-    public static User buildUser(String firstName, String lastName, String password, String email) {
+    public static User buildUser(String firstName,
+                                 String lastName,
+                                 String username,
+                                 String email,
+                                 String password
+                                 ) {
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setPassword(password);
+        user.setUsername(username);
         user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRoles(new HashSet<>());
         user.setAccounts(new ArrayList<>());
+        user.setEnabled(true);
 
         return user;
     }

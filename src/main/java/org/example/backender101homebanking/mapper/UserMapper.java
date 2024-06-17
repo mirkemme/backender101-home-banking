@@ -21,7 +21,6 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "enabled", ignore = true)
     @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "username", ignore = true)
     void updateUserFromUserDTO(UserDTO dto, @MappingTarget User entity);
 
     @Mapping(target = "id", ignore = true)
