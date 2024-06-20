@@ -25,7 +25,7 @@ public class TransactionServiceImpl implements TransactionService  {
     private final TransactionMapper transactionMapper;
 
     public TransactionDTO withdraw(TransactionDTO transactionDTO) {
-        Account account = accountRepository.findById(transactionDTO.getAccountNumber())
+        Account account = accountRepository.findById(transactionDTO.getAccountIban())
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         BigDecimal currentBalance = account.getBalance();
@@ -50,7 +50,7 @@ public class TransactionServiceImpl implements TransactionService  {
     }
 
     public TransactionDTO deposit(TransactionDTO transactionDTO) {
-        Account account = accountRepository.findById(transactionDTO.getAccountNumber())
+        Account account = accountRepository.findById(transactionDTO.getAccountIban())
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         BigDecimal currentBalance = account.getBalance();
@@ -72,7 +72,7 @@ public class TransactionServiceImpl implements TransactionService  {
 
     @Override
     public List<TransactionResponseDTO> getLast5Transactions(Account account) {
-        List<Transaction> allTransactions = transactionRepository.findAllByAccountNumberOrderByTimestampDesc(account.getNumber());
+        List<Transaction> allTransactions = transactionRepository.findAllByAccountIbanOrderByTimestampDesc(account.getIban());
         List<Transaction> last5Transactions = allTransactions.subList(0, Math.min(allTransactions.size(), 5));
 
         List<TransactionResponseDTO> transactionResponseDTOs = last5Transactions.stream()

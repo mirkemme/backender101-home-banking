@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
-    @Mapping(target = "number", ignore = true)
+    @Mapping(target = "iban", ignore = true)
     @Mapping(target = "transactions", ignore = true)
     @Mapping(target = "users", ignore = true)
     Account convertToEntity(AccountDTO accountDTO);

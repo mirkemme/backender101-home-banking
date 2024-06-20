@@ -2,6 +2,7 @@ package org.example.backender101homebanking.service;
 
 import org.example.backender101homebanking.dto.AccountRequestDTO;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.dto.UserUpdateDto;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
@@ -94,6 +95,7 @@ public class UserServiceTest {
     @DisplayName("UnitTest updateUser Success")
     public void testUpdateUser() {
         long userId = 0;
+        UserUpdateDto userUpdateDto = new UserUpdateDto();
         UserDTO userDTO = new UserDTO();
         User existingUser = new User();
         User updatedUser = new User();
@@ -102,10 +104,10 @@ public class UserServiceTest {
         when(userRepository.save(existingUser)).thenReturn(updatedUser);
         when(userMapper.convertToDTO(updatedUser)).thenReturn(userDTO);
 
-        UserDTO result = userService.updateUser(userId, userDTO);
+        UserDTO result = userService.updateUser(userId, userUpdateDto);
 
         verify(userRepository, times(1)).findById(userId);
-        verify(userMapper, times(1)).updateUserFromUserDTO(userDTO, existingUser);
+        verify(userMapper, times(1)).updateUserFromUserUpdateDto(userUpdateDto, existingUser);
         verify(userRepository, times(1)).save(existingUser);
         verify(userMapper, times(1)).convertToDTO(updatedUser);
 
@@ -161,13 +163,13 @@ public class UserServiceTest {
     @DisplayName("UnitTest updateUser Failure: User Not Found")
     public void testUpdateUserNotFound() {
         long userId = 1;
-        UserDTO userDTO = new UserDTO();
+        UserUpdateDto userUpdateDto = new UserUpdateDto();
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(userId, userDTO));
+        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(userId, userUpdateDto));
 
         verify(userRepository, times(1)).findById(userId);
-        verify(userMapper, never()).updateUserFromUserDTO(any(), any());
+        verify(userMapper, never()).updateUserFromUserUpdateDto(any(), any());
         verify(userRepository, never()).save(any());
         verify(userMapper, never()).convertToDTO(any());
     }

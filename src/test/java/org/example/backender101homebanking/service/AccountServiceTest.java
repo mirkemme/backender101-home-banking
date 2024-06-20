@@ -78,16 +78,16 @@ public class AccountServiceTest {
     @DisplayName("UnitTest getAccountBalance Success")
     public void testGetAccountBalance() {
         User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
-        String accountNumber = "IT60X0542811101000000654321";
-        Account account = buildAccount(accountNumber, new BigDecimal("1000.00"), Collections.singletonList(user));
+        String accountIban = "IT60X0542811101000000654321";
+        Account account = buildAccount(accountIban, new BigDecimal("1000.00"), Collections.singletonList(user));
 
-        when(accountRepository.findById(accountNumber)).thenReturn(Optional.of(account));
+        when(accountRepository.findById(accountIban)).thenReturn(Optional.of(account));
 
-        BalanceResponseDTO result = accountService.getAccountBalance(accountNumber);
+        BalanceResponseDTO result = accountService.getAccountBalance(accountIban);
 
         assertNotNull(result);
         assertEquals(new BigDecimal("1000.00"), result.getBalance());
-        verify(accountRepository, times(1)).findById(accountNumber);
+        verify(accountRepository, times(1)).findById(accountIban);
     }
 
     @Test
@@ -138,25 +138,25 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest getLast5Transactions Success")
     public void testGetLast5Transactions_Success() {
-        String accountNumber = "IT60X0542811101000000654321";
-        Account account = buildAccount(accountNumber, new BigDecimal("1000.00"), Collections.emptyList());
+        String accountIban = "IT60X0542811101000000654321";
+        Account account = buildAccount(accountIban, new BigDecimal("1000.00"), Collections.emptyList());
         List<Transaction> transactions = Arrays.asList(
                 buildTransaction(account, new BigDecimal("1000.0"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT),
                 buildTransaction(account, new BigDecimal("500.0"), Transaction.CurrencyType.EURO, Transaction.TransactionType.WITHDRAW),
                 buildTransaction(account, new BigDecimal("2000.0"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT)
         );
         List<TransactionResponseDTO> transactionResponseDTOs = Arrays.asList(
-                buildTransactionResponseDTO(accountNumber, "DEPOSIT", "EURO"),
-                buildTransactionResponseDTO(accountNumber, "WITHDRAW", "EURO"),
-                buildTransactionResponseDTO(accountNumber, "DEPOSIT", "EURO")
+                buildTransactionResponseDTO(accountIban, "DEPOSIT", "EURO"),
+                buildTransactionResponseDTO(accountIban, "WITHDRAW", "EURO"),
+                buildTransactionResponseDTO(accountIban, "DEPOSIT", "EURO")
         );
 
-        when(accountRepository.findById(accountNumber)).thenReturn(Optional.of(account));
+        when(accountRepository.findById(accountIban)).thenReturn(Optional.of(account));
         when(transactionService.getLast5Transactions(account)).thenReturn(transactionResponseDTOs);
 
-        List<TransactionResponseDTO> result = accountService.getLast5Transactions(accountNumber);
+        List<TransactionResponseDTO> result = accountService.getLast5Transactions(accountIban);
 
-        verify(accountRepository, times(1)).findById(accountNumber);
+        verify(accountRepository, times(1)).findById(accountIban);
         verify(transactionService, times(1)).getLast5Transactions(account);
 
         assertNotNull(result);
@@ -168,14 +168,14 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest getAccountBalance AccountNotFound")
     public void testGetAccountBalanceAccountNotFound() {
-        String notExistingAccountNumber = "NOT_EXISTING_ACCOUNT";
+        String notExistingaccountIban = "NOT_EXISTING_ACCOUNT";
 
-        when(accountRepository.findById(notExistingAccountNumber)).thenReturn(Optional.empty());
+        when(accountRepository.findById(notExistingaccountIban)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-                () -> accountService.getAccountBalance(notExistingAccountNumber));
+                () -> accountService.getAccountBalance(notExistingaccountIban));
 
-        verify(accountRepository, times(1)).findById(notExistingAccountNumber);
+        verify(accountRepository, times(1)).findById(notExistingaccountIban);
     }
 
     @Test
@@ -199,30 +199,30 @@ public class AccountServiceTest {
     @Test
     @DisplayName("UnitTest deleteAccount Failure - Account not found")
     public void testDeleteAccountFailureAccountNotFound() {
-        String accountNumber = "IT60X0542811101000000654321";
+        String accountIban = "IT60X0542811101000000654321";
 
-        when(accountRepository.findById(accountNumber)).thenReturn(Optional.empty());
+        when(accountRepository.findById(accountIban)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-                () -> accountService.deleteAccount(accountNumber));
+                () -> accountService.deleteAccount(accountIban));
 
-        assertEquals("Account not found with account number: " + accountNumber, exception.getMessage());
+        assertEquals("Account not found with account iban: " + accountIban, exception.getMessage());
 
-        verify(accountRepository, times(1)).findById(accountNumber);
+        verify(accountRepository, times(1)).findById(accountIban);
         verify(accountRepository, never()).delete(any());
     }
 
     @Test
     @DisplayName("UnitTest getLast5Transactions Failure - Account not found")
     public void testGetLast5Transactions_AccountNotFound() {
-        String nonExistingAccountNumber = "IT60X0542811101000000654320";
+        String nonExistingAccountIban = "IT60X0542811101000000654320";
 
-        when(accountRepository.findById(nonExistingAccountNumber)).thenReturn(Optional.empty());
+        when(accountRepository.findById(nonExistingAccountIban)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> accountService.getLast5Transactions(nonExistingAccountNumber));
+        assertThrows(ResourceNotFoundException.class, () -> accountService.getLast5Transactions(nonExistingAccountIban));
 
-        verify(accountRepository, times(1)).findById(nonExistingAccountNumber);
-        verify(transactionRepository, never()).findAllByAccountNumberOrderByTimestampDesc(anyString());
+        verify(accountRepository, times(1)).findById(nonExistingAccountIban);
+        verify(transactionRepository, never()).findAllByAccountIbanOrderByTimestampDesc(anyString());
         verify(transactionMapper, never()).convertToResponseDto(any(Transaction.class));
     }
 }

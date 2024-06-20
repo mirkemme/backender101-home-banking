@@ -26,7 +26,7 @@ public class UserRepositoryTest {
     public void findByEmail() {
         User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
 
-        entityManager.persist(user);
+        entityManager.merge(user);
         entityManager.flush();
 
         Optional<User> foundUser = userRepository.findByEmail(user.getEmail());

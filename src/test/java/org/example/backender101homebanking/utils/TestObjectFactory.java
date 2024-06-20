@@ -2,11 +2,10 @@ package org.example.backender101homebanking.utils;
 
 import org.example.backender101homebanking.dto.TransactionDTO;
 import org.example.backender101homebanking.dto.TransactionResponseDTO;
-import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.Transaction;
 import org.example.backender101homebanking.model.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,14 @@ import java.util.List;
 @Component
 public class TestObjectFactory {
 
-    public static Transaction buildTransaction(Account account, BigDecimal amount,  Transaction.CurrencyType currency, Transaction.TransactionType type) {
+    private static PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder){
+        TestObjectFactory.passwordEncoder = passwordEncoder;
+    }
+
+    public static Transaction buildTransaction(Account account, BigDecimal amount, Transaction.CurrencyType currency, Transaction.TransactionType type) {
         Transaction transaction = new Transaction();
         transaction.setAccount(account);
         transaction.setAmount(amount);
@@ -30,9 +36,9 @@ public class TestObjectFactory {
         return transaction;
     }
 
-    public static Account buildAccount(String number, BigDecimal balance, List<User> users) {
+    public static Account buildAccount(String iban, BigDecimal balance, List<User> users) {
         Account account = new Account();
-        account.setNumber(number);
+        account.setIban(iban);
         account.setBalance(balance);
         account.setUsers(users);
         account.setTransactions(new ArrayList<>());
@@ -47,7 +53,7 @@ public class TestObjectFactory {
                                  String password
                                  ) {
 
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        //PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         User user = new User();
         user.setFirstName(firstName);
@@ -62,30 +68,19 @@ public class TestObjectFactory {
         return user;
     }
 
-    public static UserDTO buildUserDTO(String firstName, String lastName, String password, String email) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setFirstName(firstName);
-        userDTO.setLastName(lastName);
-        userDTO.setPassword(password);
-        userDTO.setEmail(email);
-        userDTO.setAccounts(new ArrayList<>());
-
-        return userDTO;
-    }
-
-    public static TransactionDTO buildTransactionDTO(String accountNumber, String type, BigDecimal amount, String
+    public static TransactionDTO buildTransactionDTO(String accountIban, String type, BigDecimal amount, String
                                                      currency) {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountNumber(accountNumber);
+        transactionDTO.setAccountIban(accountIban);
         transactionDTO.setType(type);
         transactionDTO.setAmount(amount);
         transactionDTO.setCurrency(currency);
 
         return transactionDTO;
     }
-    public static TransactionResponseDTO buildTransactionResponseDTO(String accountNumber, String type, String currency) {
+    public static TransactionResponseDTO buildTransactionResponseDTO(String accountIban, String type, String currency) {
         TransactionResponseDTO responseDTO = new TransactionResponseDTO();
-        responseDTO.setAccountNumber(accountNumber);
+        responseDTO.setAccountIban(accountIban);
         responseDTO.setType(type);
         responseDTO.setCurrency(currency);
         return responseDTO;

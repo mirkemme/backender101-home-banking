@@ -54,15 +54,15 @@ public class AccountControllerTest {
                 .andExpect(content()
                         .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].number").value("IT60X0542811101000000654321"))
+                .andExpect(jsonPath("$[0].iban").value("IT60X0542811101000000654321"))
                 .andExpect(jsonPath("$[0].balance").value(1000))
-                .andExpect(jsonPath("$[1].number").value("IT60X0542811101000000654322"))
+                .andExpect(jsonPath("$[1].iban").value("IT60X0542811101000000654322"))
                 .andExpect(jsonPath("$[1].balance").value(2000));
     }
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/v1/accounts/{accountNumber}/balance - Success")
+    @DisplayName("GET /api/v1/accounts/{accountIban}/balance - Success")
     public void testGetAccountBalance() throws Exception {
         User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
         Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
@@ -71,7 +71,7 @@ public class AccountControllerTest {
         entityManager.merge(account);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/v1/accounts/{accountNumber}/balance", account.getNumber())
+        mockMvc.perform(get("/api/v1/accounts/{accountIban}/balance", account.getIban())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -116,7 +116,7 @@ public class AccountControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/v1/accounts/{accountNumber}/transactions - Success")
+    @DisplayName("GET /api/v1/accounts/{accountIban}/transactions - Success")
     public void testGetLast5Transactions() throws Exception {
         User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
         Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
@@ -130,7 +130,7 @@ public class AccountControllerTest {
         entityManager.merge(transaction2);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/v1/accounts/{accountNumber}/transactions", account.getNumber())
+        mockMvc.perform(get("/api/v1/accounts/{accountIban}/transactions", account.getIban())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -142,7 +142,7 @@ public class AccountControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("DELETE /api/v1/accounts/{accountNumber} - Success")
+    @DisplayName("DELETE /api/v1/accounts/{accountIban} - Success")
     public void testDeleteAccount() throws Exception {
         User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
         Account accountToDelete = buildAccount("IT60X0542811101000000654321", new BigDecimal("3000.00"), Collections.singletonList(user));
@@ -151,7 +151,7 @@ public class AccountControllerTest {
         entityManager.merge(accountToDelete);
         entityManager.flush();
 
-        mockMvc.perform(delete("/api/v1/accounts/{accountNumber}", accountToDelete.getNumber()))
+        mockMvc.perform(delete("/api/v1/accounts/{accountIban}", accountToDelete.getIban()))
                 .andExpect(status().isOk());
     }
 
@@ -168,10 +168,10 @@ public class AccountControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/v1/accounts/{accountNumber}/balance - ResourceNotFoundException")
+    @DisplayName("GET /api/v1/accounts/{accountIban}/balance - ResourceNotFoundException")
     public void testGetAccountBalanceFailure() throws Exception {
-        String nonExistingAccountNumber = "IT60X0542811101000000654320";
-        mockMvc.perform(get("/api/v1/accounts/{accountNumber}/balance", nonExistingAccountNumber)
+        String nonExistingaccountIban = "IT60X0542811101000000654320";
+        mockMvc.perform(get("/api/v1/accounts/{accountIban}/balance", nonExistingaccountIban)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

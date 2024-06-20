@@ -14,35 +14,37 @@ import java.util.List;
 @RequestMapping("api/v1/accounts")
 @RequiredArgsConstructor
 public class AccountController {
+
     private final AccountService accountService;
+
     @GetMapping("/all")
     public ResponseEntity<List<AccountResponseDTO>> getAllAccounts() {
         List<AccountResponseDTO> accounts = accountService.getAllAccounts();
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
 
-    @GetMapping("/{accountNumber}/balance")
-    public ResponseEntity<BalanceResponseDTO> getAccountBalance(@PathVariable String accountNumber) {
-        BalanceResponseDTO balanceResponseDTO = accountService.getAccountBalance(accountNumber);
+    @GetMapping("/{accountIban}/balance")
+    public ResponseEntity<BalanceResponseDTO> getAccountBalance(@PathVariable String accountIban) {
+        BalanceResponseDTO balanceResponseDTO = accountService.getAccountBalance(accountIban);
 
         return new ResponseEntity<>(balanceResponseDTO, HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<String> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        String savedAccountNumber = accountService.createAccount(accountDTO);
-        return new ResponseEntity<>(savedAccountNumber, HttpStatus.CREATED);
+        String savedAccountIban = accountService.createAccount(accountDTO);
+        return new ResponseEntity<>(savedAccountIban, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{accountNumber}/transactions")
-    public ResponseEntity<List<TransactionResponseDTO>> getLast5Transactions(@PathVariable String accountNumber) {
-        List<TransactionResponseDTO> transactions = accountService.getLast5Transactions(accountNumber);
+    @GetMapping("/{accountIban}/transactions")
+    public ResponseEntity<List<TransactionResponseDTO>> getLast5Transactions(@PathVariable String accountIban) {
+        List<TransactionResponseDTO> transactions = accountService.getLast5Transactions(accountIban);
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{accountNumber}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable String accountNumber) {
-        accountService.deleteAccount(accountNumber);
+    @DeleteMapping("/{accountIban}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable String accountIban) {
+        accountService.deleteAccount(accountIban);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

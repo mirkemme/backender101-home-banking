@@ -12,9 +12,9 @@ public interface AccountService {
 
     List<AccountResponseDTO> getAllAccounts();
 
-    BalanceResponseDTO getAccountBalance(String accountNumber);
+    BalanceResponseDTO getAccountBalance(String accountIban);
 
-    void deleteAccount(String accountNumber);
+    void deleteAccount(String accountIban);
 
-    List<TransactionResponseDTO> getLast5Transactions(String accountNumber);
+    List<TransactionResponseDTO> getLast5Transactions(String accountIban);
 }

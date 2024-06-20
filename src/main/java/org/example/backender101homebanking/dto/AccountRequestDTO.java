@@ -10,6 +10,6 @@ import java.math.BigDecimal;
 @Setter
 @RequiredArgsConstructor
 public class AccountRequestDTO {
-    private String number;
+    private String iban;
     private BigDecimal balance;
 }
