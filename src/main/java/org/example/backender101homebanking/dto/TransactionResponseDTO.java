@@ -12,7 +12,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class TransactionResponseDTO {
     private Long id;
-    private String accountNumber;
+    private String accountIban;
     private String type;
     private BigDecimal amount;
     private String currency;

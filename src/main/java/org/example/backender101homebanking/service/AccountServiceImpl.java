@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.*;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.AccountMapper;
-import org.example.backender101homebanking.mapper.TransactionMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
 import org.example.backender101homebanking.model.Account;
 import org.example.backender101homebanking.model.User;
@@ -27,7 +26,6 @@ public class AccountServiceImpl implements AccountService {
     private final TransactionService transactionService;
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
-    private final TransactionMapper transactionMapper;
     private final IbanGenerator ibanGenerator;
 
     @Override
@@ -37,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
         return accounts.stream()
                 .map(account -> {
                     AccountResponseDTO accountResponseDTO = new AccountResponseDTO();
-                    accountResponseDTO.setNumber(account.getNumber());
+                    accountResponseDTO.setIban(account.getIban());
                     accountResponseDTO.setBalance(account.getBalance());
 
                     List<UserRequestDTO> users = account.getUsers().stream()
@@ -51,8 +49,8 @@ public class AccountServiceImpl implements AccountService {
                 .collect(Collectors.toList());
     }
 
-    public BalanceResponseDTO getAccountBalance(String accountNumber) {
-        Account account = accountRepository.findById(accountNumber)
+    public BalanceResponseDTO getAccountBalance(String accountIban) {
+        Account account = accountRepository.findById(accountIban)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
         BalanceResponseDTO balanceResponseDTO = new BalanceResponseDTO(account.getBalance());
         return balanceResponseDTO;
@@ -69,15 +67,15 @@ public class AccountServiceImpl implements AccountService {
         }
 
         account.setUsers(users);
-        account.setNumber(ibanGenerator.generateIban());
+        account.setIban(ibanGenerator.generateIban());
         accountRepository.save(account);
 
-        return account.getNumber();
+        return account.getIban();
     }
 
     @Override
-    public List<TransactionResponseDTO> getLast5Transactions(String accountNumber) {
-        Account account = accountRepository.findById(accountNumber)
+    public List<TransactionResponseDTO> getLast5Transactions(String accountIban) {
+        Account account = accountRepository.findById(accountIban)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         List<TransactionResponseDTO> transactionResponseDTOs = transactionService.getLast5Transactions(account);
@@ -86,9 +84,9 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void deleteAccount(String accountNumber) {
-        Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with account number: " + accountNumber));
+    public void deleteAccount(String accountIban) {
+        Account account = accountRepository.findById(accountIban)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with account iban: " + accountIban));
         accountRepository.delete(account);
     }
 }

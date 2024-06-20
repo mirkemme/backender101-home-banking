@@ -2,6 +2,7 @@ package org.example.backender101homebanking.service;
 
 import org.example.backender101homebanking.dto.AccountRequestDTO;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.dto.UserUpdateDto;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
@@ -41,9 +42,9 @@ public class UserServiceTest {
     @Test
     @DisplayName("UnitTest getAllUsers Success")
     public void testGetAllUsers() {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
-        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account1 = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
+        Account account2 = buildAccount("IT60X0542811101000000654322", new BigDecimal("2000.00"), Collections.singletonList(user));
         List<Account> accounts = Arrays.asList(account1, account2);
         user.setAccounts(accounts);
 
@@ -64,8 +65,9 @@ public class UserServiceTest {
     @Test
     @DisplayName("UnitTest findById Success")
     public void testGetUserById() {
-        int userId = 1;
+        long userId = 1;
         User user = new User();
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         UserDTO userDTO = new UserDTO();
@@ -77,46 +79,35 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("UnitTest findById not found")
-    void testFindByIdNotFound(){
-        int userId = 2;
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(userId));
-    }
-
-    @Test
     @DisplayName("UnitTest addUser Success")
     public void testAddUser() {
         UserDTO userDTO = new UserDTO();
         User user = new User();
-        when(userMapper.convertToEntity(userDTO)).thenReturn(user);
+
         when(userRepository.save(user)).thenReturn(user);
 
-        UserDTO result = userService.addUser(userDTO);
+        userService.addUser(user);
 
-        verify(userMapper, times(1)).convertToEntity(userDTO);
         verify(userRepository, times(1)).save(user);
-        verify(userMapper, times(1)).convertToDTO(user);
-
-        //assertNotNull(result);
     }
 
     @Test
     @DisplayName("UnitTest updateUser Success")
     public void testUpdateUser() {
-        int userId = 0;
+        long userId = 0;
+        UserUpdateDto userUpdateDto = new UserUpdateDto();
         UserDTO userDTO = new UserDTO();
         User existingUser = new User();
         User updatedUser = new User();
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(existingUser)).thenReturn(updatedUser);
         when(userMapper.convertToDTO(updatedUser)).thenReturn(userDTO);
 
-        UserDTO result = userService.updateUser(userId, userDTO);
+        UserDTO result = userService.updateUser(userId, userUpdateDto);
 
         verify(userRepository, times(1)).findById(userId);
-        verify(userMapper, times(1)).updateUserFromUserDTO(userDTO, existingUser);
+        verify(userMapper, times(1)).updateUserFromUserUpdateDto(userUpdateDto, existingUser);
         verify(userRepository, times(1)).save(existingUser);
         verify(userMapper, times(1)).convertToDTO(updatedUser);
 
@@ -127,8 +118,9 @@ public class UserServiceTest {
     @Test
     @DisplayName("UnitTest deleteUser Success")
     public void testDeleteUser() {
-        int userId = 1;
+        long userId = 1;
         User user = new User();
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         userService.deleteUser(userId);
@@ -137,34 +129,98 @@ public class UserServiceTest {
         verify(userRepository, times(1)).delete(user);
     }
 
+    @Test
+    @DisplayName("UnitTest existsByUsername Success")
+    public void testExistsByUsername() {
+        String existingUsername = "username-user1";
+        User user = new User();
+
+        when(userRepository.existsByUsername(existingUsername)).thenReturn(true);
+
+        boolean exists = userService.existsByUsername(existingUsername);
+
+        assertTrue(exists, "User should exist by username");
+        verify(userRepository, times(1)).existsByUsername(existingUsername);
+    }
+
+    @Test
+    @DisplayName("UnitTest existsByEmail Success")
+    public void testExistsByEmail() {
+        String existingEmail = "user1@email.com";
+        User user = new User();
+
+        when(userRepository.existsByEmail(existingEmail)).thenReturn(true);
+
+        boolean exists = userService.existsByEmail(existingEmail);
+
+        assertTrue(exists, "User should exist by email");
+        verify(userRepository, times(1)).existsByEmail(existingEmail);
+    }
+
     /********** FAILURE TESTS **********/
 
     @Test
     @DisplayName("UnitTest updateUser Failure: User Not Found")
     public void testUpdateUserNotFound() {
-        // Setup
-        int userId = 1;
-        UserDTO userDTO = new UserDTO();
+        long userId = 1;
+        UserUpdateDto userUpdateDto = new UserUpdateDto();
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // Test and Assertions
-        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(userId, userDTO));
+        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(userId, userUpdateDto));
 
-        // Verify
         verify(userRepository, times(1)).findById(userId);
-        verify(userMapper, never()).updateUserFromUserDTO(any(), any());
+        verify(userMapper, never()).updateUserFromUserUpdateDto(any(), any());
         verify(userRepository, never()).save(any());
         verify(userMapper, never()).convertToDTO(any());
     }
 
     @Test
+    @DisplayName("UnitTest findById Failure: User not found")
+    void testFindByIdNotFound(){
+        long userId = 2;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(userId));
+    }
+
+    @Test
     @DisplayName("UnitTest deleteUser Failure: User Not Found")
     public void testDeleteUserNotFound() {
-        int userId = 1;
+        long userId = 1;
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(userId));
+
         verify(userRepository, times(1)).findById(userId);
         verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    @DisplayName("UnitTest existsByUsername Failure: User Not Found")
+    public void testExistsByUsernameNotFound() {
+        String notExistingUsername = "username-user1";
+        User user = new User();
+
+        when(userRepository.existsByUsername(notExistingUsername)).thenReturn(false);
+
+        boolean exists = userService.existsByUsername(notExistingUsername);
+
+        assertFalse(exists, "User should not exist by username");
+        verify(userRepository, times(1)).existsByUsername(notExistingUsername);
+    }
+
+    @Test
+    @DisplayName("UnitTest existsByEmail Failure: User Not Found")
+    public void testExistsByEmailNotFound() {
+        String notExistingEmail = "user1@email.com";
+        User user = new User();
+
+        when(userRepository.existsByEmail(notExistingEmail)).thenReturn(false);
+
+        boolean exists = userService.existsByEmail(notExistingEmail);
+
+        assertFalse(exists, "User should exist by email");
+        verify(userRepository, times(1)).existsByEmail(notExistingEmail);
     }
 }

@@ -37,23 +37,23 @@ public class TransactionServiceTest {
     @DisplayName("UnitTest Withdraw Success")
     public void testWithdrawSuccess() {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountNumber("ACC001");
+        transactionDTO.setAccountIban("IT60X0542811101000000654321");
         transactionDTO.setAmount(BigDecimal.valueOf(50));
 
         Account account = new Account();
-        account.setNumber("ACC001");
+        account.setIban("IT60X0542811101000000654321");
         account.setBalance(BigDecimal.valueOf(100));
 
         Transaction transaction = new Transaction();
 
-        when(accountRepository.findById("ACC001")).thenReturn(Optional.of(account));
+        when(accountRepository.findById("IT60X0542811101000000654321")).thenReturn(Optional.of(account));
         when(transactionMapper.convertToEntity(transactionDTO)).thenReturn(transaction);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         TransactionDTO result = transactionService.withdraw(transactionDTO);
 
         assertNotNull(result);
-        assertEquals(transactionDTO.getAccountNumber(), result.getAccountNumber());
+        assertEquals(transactionDTO.getAccountIban(), result.getAccountIban());
         assertEquals(transactionDTO.getAmount().negate(), result.getAmount().negate());
     }
 
@@ -61,23 +61,23 @@ public class TransactionServiceTest {
     @DisplayName("UnitTest Deposit Success")
     public void testDepositSuccess() {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountNumber("ACC001");
+        transactionDTO.setAccountIban("IT60X0542811101000000654321");
         transactionDTO.setAmount(BigDecimal.valueOf(50));
 
         Account account = new Account();
-        account.setNumber("ACC001");
+        account.setIban("IT60X0542811101000000654321");
         account.setBalance(BigDecimal.valueOf(100));
 
         Transaction transaction = new Transaction();
 
-        when(accountRepository.findById("ACC001")).thenReturn(Optional.of(account));
+        when(accountRepository.findById("IT60X0542811101000000654321")).thenReturn(Optional.of(account));
         when(transactionMapper.convertToEntity(transactionDTO)).thenReturn(transaction);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         TransactionDTO result = transactionService.deposit(transactionDTO);
 
         assertNotNull(result);
-        assertEquals(transactionDTO.getAccountNumber(), result.getAccountNumber());
+        assertEquals(transactionDTO.getAccountIban(), result.getAccountIban());
         assertEquals(transactionDTO.getAmount(), result.getAmount());
     }
 
@@ -87,14 +87,14 @@ public class TransactionServiceTest {
     @DisplayName("UnitTest Deposit Failure: Insufficient Balance")
     public void testWithdrawInsufficientBalance() {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountNumber("ACC001");
+        transactionDTO.setAccountIban("IT60X0542811101000000654321");
         transactionDTO.setAmount(BigDecimal.valueOf(150));
 
         Account account = new Account();
-        account.setNumber("ACC001");
+        account.setIban("IT60X0542811101000000654321");
         account.setBalance(BigDecimal.valueOf(100));
 
-        when(accountRepository.findById("ACC001")).thenReturn(Optional.of(account));
+        when(accountRepository.findById("IT60X0542811101000000654321")).thenReturn(Optional.of(account));
 
         assertThrows(InsufficientBalanceException.class, () -> {
             transactionService.withdraw(transactionDTO);
@@ -105,10 +105,10 @@ public class TransactionServiceTest {
     @DisplayName("UnitTest Deposit Failure: Account not found")
     public void testAccountNotFound() {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountNumber("ACC001");
+        transactionDTO.setAccountIban("IT60X0542811101000000654321");
         transactionDTO.setAmount(BigDecimal.valueOf(50));
 
-        when(accountRepository.findById("ACC001")).thenReturn(Optional.empty());
+        when(accountRepository.findById("IT60X0542811101000000654321")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             transactionService.withdraw(transactionDTO);

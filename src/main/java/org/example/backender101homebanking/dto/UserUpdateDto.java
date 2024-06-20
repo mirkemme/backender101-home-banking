@@ -5,13 +5,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class UserDTO {
-    private long id;
+public class UserUpdateDto {
 
     private String firstName;
 
@@ -23,6 +20,4 @@ public class UserDTO {
 
     @Email(message = "Invalid email format")
     private String email;
-
-    private List<AccountRequestDTO> accounts;
 }

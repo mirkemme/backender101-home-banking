@@ -17,13 +17,13 @@ import java.util.List;
 @Table(name = "account")
 public class Account {
     @Id
-    @Column(name = "number")
-    private String number;
+    @Column(name = "iban")
+    private String iban;
 
     @ManyToMany
     @JoinTable(
             name = "account_user",
-            joinColumns = @JoinColumn(name = "account_number"),
+            joinColumns = @JoinColumn(name = "account_iban"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> users;

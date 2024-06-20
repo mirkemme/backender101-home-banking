@@ -3,6 +3,7 @@ package org.example.backender101homebanking.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backender101homebanking.dto.AccountRequestDTO;
 import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.dto.UserUpdateDto;
 import org.example.backender101homebanking.exception.ResourceNotFoundException;
 import org.example.backender101homebanking.mapper.AccountMapper;
 import org.example.backender101homebanking.mapper.UserMapper;
@@ -55,17 +56,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateUser(long userId, UserDTO userDTO) {
+    public UserDTO updateUser(long userId, UserUpdateDto userUpdateDto) {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        if (userUpdateDto.getPassword() != null && !userUpdateDto.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userUpdateDto.getPassword()));
         } else {
-            userDTO.setPassword(existingUser.getPassword());
+            userUpdateDto.setPassword(existingUser.getPassword());
         }
 
-        userMapper.updateUserFromUserDTO(userDTO, existingUser);
+        userMapper.updateUserFromUserUpdateDto(userUpdateDto, existingUser);
 
         User updatedUser = userRepository.save(existingUser);
 

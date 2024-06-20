@@ -3,10 +3,7 @@ package org.example.backender101homebanking.api;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backender101homebanking.dto.SignInResponseDto;
-import org.example.backender101homebanking.dto.SignInRequestDto;
-import org.example.backender101homebanking.dto.SignUpRequestDto;
-import org.example.backender101homebanking.dto.UserDTO;
+import org.example.backender101homebanking.dto.*;
 import org.example.backender101homebanking.service.AuthService;
 import org.example.backender101homebanking.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -47,9 +44,9 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<UserDTO> updateUser(HttpServletRequest request, @Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(HttpServletRequest request, @Valid @RequestBody UserUpdateDto userUpdateDto) {
         Long userId = (Long) request.getAttribute("userId");
-        UserDTO updatedUser = userService.updateUser(userId, userDTO);
+        UserDTO updatedUser = userService.updateUser(userId, userUpdateDto);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 public class AccountResponseDTO {
-    private String number;
+    private String iban;
     private BigDecimal balance;
     private List<UserRequestDTO> users;
 }

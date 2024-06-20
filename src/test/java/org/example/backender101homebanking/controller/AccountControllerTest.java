@@ -1,6 +1,5 @@
 package org.example.backender101homebanking.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.example.backender101homebanking.dto.AccountDTO;
 import org.example.backender101homebanking.model.Account;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.example.backender101homebanking.utils.TestObjectFactory.*;
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,12 +34,13 @@ public class AccountControllerTest {
     private MockMvc mockMvc;
 
     @Test
+    @WithMockUser
     @DisplayName("GET /api/v1/accounts/all - Success")
     public void testGetAllAccounts() throws Exception {
-        User user1 = buildUser( "name-user1", "surname-user1", "123456789", "user1@email.com");
-        User user2 = buildUser( "name-user2", "surname-user2", "987654321", "user2@email.com");
-        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user1));
-        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"), Collections.singletonList(user2));
+        User user1 = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        User user2 = buildUser("name-user2", "surname-user2", "username2", "user2@email.com", "987654321");
+        Account account1 = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user1));
+        Account account2 = buildAccount("IT60X0542811101000000654322", new BigDecimal("2000.00"), Collections.singletonList(user2));
 
         entityManager.merge(user1);
         entityManager.merge(user2);
@@ -54,23 +54,24 @@ public class AccountControllerTest {
                 .andExpect(content()
                         .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].number").value("ACC001"))
+                .andExpect(jsonPath("$[0].iban").value("IT60X0542811101000000654321"))
                 .andExpect(jsonPath("$[0].balance").value(1000))
-                .andExpect(jsonPath("$[1].number").value("ACC002"))
+                .andExpect(jsonPath("$[1].iban").value("IT60X0542811101000000654322"))
                 .andExpect(jsonPath("$[1].balance").value(2000));
     }
 
     @Test
-    @DisplayName("GET /api/v1/accounts/{accountNumber}/balance - Success")
+    @WithMockUser
+    @DisplayName("GET /api/v1/accounts/{accountIban}/balance - Success")
     public void testGetAccountBalance() throws Exception {
-        User user = buildUser( "name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
 
         entityManager.merge(user);
         entityManager.merge(account);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/v1/accounts/{accountNumber}/balance", account.getNumber())
+        mockMvc.perform(get("/api/v1/accounts/{accountIban}/balance", account.getIban())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -79,18 +80,26 @@ public class AccountControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/accounts - Success")
     public void testCreateAccount() throws Exception {
         AccountDTO requestAccountDTO = new AccountDTO();
-        requestAccountDTO.setNumber("ACC003");
         requestAccountDTO.setBalance(new BigDecimal("3000.00"));
-        List<Integer> userIds = Arrays.asList(1, 2);
+        List<Long> userIds = Arrays.asList(1L, 2L);
         requestAccountDTO.setUserIds(userIds);
 
-        User user1 = buildUser( "name-user1", "surname-user1", "123456789", "user1@email.com");
-        User user2 = buildUser( "name-user2", "surname-user2", "987654321", "user2@email.com");
-        Account account1 = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user1));
-        Account account2 = buildAccount("ACC002", new BigDecimal("2000.00"), Collections.singletonList(user2));
+        User user1 = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        User user2 = buildUser("name-user2", "surname-user2", "username2", "user2@email.com", "987654321");
+
+        Account account1 = buildAccount(
+                "IT60X0542811101000000654321",
+                new BigDecimal("1000.00"),
+                Collections.singletonList(user1));
+
+        Account account2 = buildAccount(
+                "IT60X0542811101000000654322",
+                new BigDecimal("2000.00"),
+                Collections.singletonList(user2));
 
         entityManager.merge(user1);
         entityManager.merge(user2);
@@ -100,16 +109,17 @@ public class AccountControllerTest {
 
         mockMvc.perform(post("/api/v1/accounts")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(requestAccountDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(content().string(is("ACC003")));
+                        .content("{\"balance\": 2000," +
+                                "\"userIds\": [1, 2]}"))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    @DisplayName("GET /api/v1/accounts/{accountNumber}/transactions - Success")
+    @WithMockUser
+    @DisplayName("GET /api/v1/accounts/{accountIban}/transactions - Success")
     public void testGetLast5Transactions() throws Exception {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account account = buildAccount("ACC001", new BigDecimal("1000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account account = buildAccount("IT60X0542811101000000654321", new BigDecimal("1000.00"), Collections.singletonList(user));
 
         Transaction transaction1 = buildTransaction(account, new BigDecimal("100.00"), Transaction.CurrencyType.EURO, Transaction.TransactionType.DEPOSIT);
         Transaction transaction2 = buildTransaction(account, new BigDecimal("50.00"), Transaction.CurrencyType.EURO, Transaction.TransactionType.WITHDRAW);
@@ -120,7 +130,7 @@ public class AccountControllerTest {
         entityManager.merge(transaction2);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/v1/accounts/{accountNumber}/transactions", account.getNumber())
+        mockMvc.perform(get("/api/v1/accounts/{accountIban}/transactions", account.getIban())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -131,22 +141,24 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/accounts/{accountNumber} - Success")
+    @WithMockUser
+    @DisplayName("DELETE /api/v1/accounts/{accountIban} - Success")
     public void testDeleteAccount() throws Exception {
-        User user = buildUser("name-user1", "surname-user1", "123456789", "user1@email.com");
-        Account accountToDelete = buildAccount("ACC001", new BigDecimal("3000.00"), Collections.singletonList(user));
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account accountToDelete = buildAccount("IT60X0542811101000000654321", new BigDecimal("3000.00"), Collections.singletonList(user));
 
         entityManager.merge(user);
         entityManager.merge(accountToDelete);
         entityManager.flush();
 
-        mockMvc.perform(delete("/api/v1/accounts/{accountNumber}", accountToDelete.getNumber()))
+        mockMvc.perform(delete("/api/v1/accounts/{accountIban}", accountToDelete.getIban()))
                 .andExpect(status().isOk());
     }
 
     /********** FAILURE TESTS **********/
 
     @Test
+    @WithMockUser
     @DisplayName("GET /api/v1/accounts/all - Failure: Resource Not Found")
     public void testGetAllAccountsFailure() throws Exception {
         mockMvc.perform(get("/api/v1/accounts/all/invalidPath")
@@ -155,26 +167,30 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/accounts/{accountNumber}/balance - ResourceNotFoundException")
+    @WithMockUser
+    @DisplayName("GET /api/v1/accounts/{accountIban}/balance - ResourceNotFoundException")
     public void testGetAccountBalanceFailure() throws Exception {
-        String nonExistingAccountNumber = "ACC123456";
-        mockMvc.perform(get("/api/v1/accounts/{accountNumber}/balance", nonExistingAccountNumber)
+        String nonExistingaccountIban = "IT60X0542811101000000654320";
+        mockMvc.perform(get("/api/v1/accounts/{accountIban}/balance", nonExistingaccountIban)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/accounts - Failure: User IDs not found")
     public void testCreateAccountFailureUserIdsNotFound() throws Exception {
-        AccountDTO requestAccountDTO = new AccountDTO();
-        requestAccountDTO.setNumber("ACC003");
-        requestAccountDTO.setBalance(new BigDecimal("3000.00"));
-        List<Integer> nonExistingUserIds = Arrays.asList(100, 200);
-        requestAccountDTO.setUserIds(nonExistingUserIds);
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+        Account accountToDelete = buildAccount("IT60X0542811101000000654321", new BigDecimal("3000.00"), Collections.singletonList(user));
+
+        entityManager.merge(user);
+        entityManager.merge(accountToDelete);
+        entityManager.flush();
 
         mockMvc.perform(post("/api/v1/accounts")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(requestAccountDTO)))
+                        .content("{\"balance\": 2000," +
+                                "\"userIds\": [12345]}"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.statusCode").value(404));

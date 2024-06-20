@@ -3,6 +3,7 @@ package org.example.backender101homebanking.mapper;
 import org.example.backender101homebanking.dto.SignUpRequestDto;
 import org.example.backender101homebanking.dto.UserDTO;
 import org.example.backender101homebanking.dto.UserRequestDTO;
+import org.example.backender101homebanking.dto.UserUpdateDto;
 import org.example.backender101homebanking.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,12 +18,12 @@ public interface UserMapper {
 
     User convertToEntity(UserDTO userDTO);
 
-    @Named("updateUserFromUserDto")
+    @Named("updateUserFromUserUpdateDto")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "enabled", ignore = true)
+    @Mapping(target = "accounts", ignore = true)
     @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "username", ignore = true)
-    void updateUserFromUserDTO(UserDTO dto, @MappingTarget User entity);
+    void updateUserFromUserUpdateDto(UserUpdateDto dto, @MappingTarget User entity);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)

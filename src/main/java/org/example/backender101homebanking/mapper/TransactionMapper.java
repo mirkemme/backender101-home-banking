@@ -9,7 +9,7 @@ import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
-    @Mapping(target = "accountNumber", source = "transaction.account.number")
+    @Mapping(target = "accountIban", source = "transaction.account.iban")
     @Mapping(source = "type", target = "type", qualifiedByName = "transactionTypeToString")
     @Mapping(source = "currency", target = "currency", qualifiedByName = "currencyTypeToString")
     TransactionResponseDTO convertToResponseDto(Transaction transaction);

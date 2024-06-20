@@ -11,8 +11,8 @@ import java.math.BigDecimal;
 @Setter
 @RequiredArgsConstructor
 public class TransactionRequestDTO {
-    @NotBlank(message = "accountNumber is mandatory")
-    private String accountNumber;
+    @NotBlank(message = "accountIban is mandatory")
+    private String accountIban;
     @NotBlank(message = "type is mandatory")
     private String type;
     @NotBlank(message = "amount is mandatory")

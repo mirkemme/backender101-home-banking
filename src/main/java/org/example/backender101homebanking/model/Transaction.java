@@ -44,7 +44,7 @@ public class Transaction {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "account_number", nullable = false)
+    @JoinColumn(name = "account_iban", nullable = false)
     private Account account;
 
     @Column(name = "type", nullable = false)

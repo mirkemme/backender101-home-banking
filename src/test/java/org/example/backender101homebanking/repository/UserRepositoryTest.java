@@ -8,6 +8,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.Optional;
+
+import static org.example.backender101homebanking.utils.TestObjectFactory.buildUser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
@@ -20,21 +23,18 @@ public class UserRepositoryTest {
     private TestEntityManager entityManager;
 
     @Test
-    public void testFindById() {
-        User user = new User();
-        user.setFirstName("Bart");
-        user.setLastName("Simpson");
-        user.setEmail("bartsimpson@example.com");
-        user.setPassword("123456789");
-        entityManager.persist(user);
+    public void findByEmail() {
+        User user = buildUser("name-user1", "surname-user1", "username1", "user1@email.com", "123456789");
+
+        entityManager.merge(user);
         entityManager.flush();
 
-        User foundUser = userRepository.findById(1).orElse(null);
+        Optional<User> foundUser = userRepository.findByEmail(user.getEmail());
 
-        if (foundUser != null) {
-            System.out.println("Found User: " + foundUser.getId() + " - " + foundUser.getFirstName());
-            assertEquals(1, foundUser.getId());
-            assertEquals("Bart", foundUser.getFirstName());
+        if (foundUser.isPresent()) {
+            System.out.println("Found User: " + foundUser.orElseThrow().getId() + " - " + foundUser.orElseThrow().getFirstName());
+            assertEquals(1, foundUser.orElseThrow().getId());
+            assertEquals("name-user1", foundUser.orElseThrow().getFirstName());
         } else {
             System.out.println("User not found!");
         }
